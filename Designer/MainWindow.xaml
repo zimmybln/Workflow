@@ -1,14 +1,16 @@
-﻿<Window x:Class="Designer.MainWindow"
+﻿<fluent:RibbonWindow x:Class="Designer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:fluent="clr-namespace:Fluent;assembly=Fluent"
         xmlns:local="clr-namespace:Designer"
         xmlns:controls="clr-namespace:Designer.Controls"
         xmlns:models="clr-namespace:Designer.Models"
         xmlns:components="clr-namespace:Designer.Components"
+        xmlns:Toolbox="clr-namespace:System.Activities.Presentation.Toolbox;assembly=System.Activities.Presentation"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525"
+        Title="MainWindow" 
         components:WindowBehavior.Loaded="{Binding LoadedAdapter}">
     <Window.DataContext>
         <models:MainWindowModel />
@@ -20,12 +22,43 @@
             <ColumnDefinition Width="200" />
         </Grid.ColumnDefinitions>
 
-        <controls:WorkflowEditor Grid.Column="1" SelectedWorkflow="{Binding CurrentWorkflow}" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
+        <fluent:Ribbon Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Height="Auto" Visibility="Visible">
+            <fluent:Ribbon.Menu>
+                <fluent:Backstage>
+                    <fluent:BackstageTabControl>
+                        <fluent:BackstageTabItem Header="New">
+                            <Grid>
+                                <ListBox Margin="5" Background="AntiqueWhite"></ListBox>
+                            </Grid>
+                            
+                         </fluent:BackstageTabItem>
+                        <fluent:BackstageTabItem Header="Print"/>
+                        <fluent:Button Header="Blue"/>
+                    </fluent:BackstageTabControl>
+                </fluent:Backstage>
+            </fluent:Ribbon.Menu>
+            
+            <fluent:RibbonTabItem Header="Start">
+                <fluent:RibbonGroupBox Header="Group">
+                    <fluent:Button Name="buttonGreen" Header="Green"  
+    Icon="Images\Green.png"             
+    LargeIcon="Images\GreenLarge.png" />
+                    <fluent:Button Name="buttonGray" Header="Grey" Icon="Images\Gray.png"  
+    LargeIcon="Images\GrayLarge.png" />
+                </fluent:RibbonGroupBox>
+            </fluent:RibbonTabItem>
+        </fluent:Ribbon>
+        
+        
+        <controls:WorkflowEditor Grid.Column="1" Grid.Row="1" SelectedWorkflow="{Binding CurrentWorkflow}" />
 
-
-
-
+        <Toolbox:ToolboxControl Grid.Column="0" Grid.Row="1" components:ToolboxAdditions.ToolboxItems="{Binding ToolboxItems}" Margin="0">
+        </Toolbox:ToolboxControl>
 
     </Grid>
-</Window>
+</fluent:RibbonWindow>
