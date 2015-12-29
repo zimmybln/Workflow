@@ -48,6 +48,7 @@
     <Reference Include="System.Activities.Core.Presentation" />
     <Reference Include="System.Activities.DurableInstancing" />
     <Reference Include="System.Activities.Presentation" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Fluent.Ribbon.4.0.0-dev0286\lib\net45\System.Windows.Interactivity.dll</HintPath>
@@ -75,6 +76,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Components\MethodCommand.cs" />
+    <Compile Include="Services\IWorkflowExecutionService.cs" />
+    <Compile Include="Services\NotificationService.cs" />
+    <Compile Include="Services\WorkflowExecutionService.cs" />
     <Page Include="Controls\WorkflowEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -88,10 +93,22 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Components\ActionAdapter.cs" />
+    <Compile Include="Components\ApplicationServices.cs" />
     <Compile Include="Components\ClosingAdapter.cs" />
+    <Compile Include="Components\ComponentInfoAttribute.cs" />
     <Compile Include="Components\ExecuteActionBase.cs" />
+    <Compile Include="Components\GenericWeakEventSubscription.cs" />
+    <Compile Include="Components\GetComponentOptions.cs" />
+    <Compile Include="Components\INotification.cs" />
+    <Compile Include="Components\INotificationService.cs" />
+    <Compile Include="Components\InvalidMethodSequence.cs" />
+    <Compile Include="Components\IService.cs" />
     <Compile Include="Components\LoadedAdapter.cs" />
     <Compile Include="Components\ModelBase.cs" />
+    <Compile Include="Components\NotificationBase.cs" />
+    <Compile Include="Components\NotificationServiceBase.cs" />
+    <Compile Include="Components\PropertyContainer.cs" />
+    <Compile Include="Components\ServiceBase.cs" />
     <Compile Include="Components\ToolboxAdditions.cs" />
     <Compile Include="Components\UnloadedAdapter.cs" />
     <Compile Include="Components\WindowBehavior.cs" />
@@ -134,6 +151,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\32x32\Run.png" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

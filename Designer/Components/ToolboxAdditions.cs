@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Activities;
 using System.Activities.Presentation.Toolbox;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -30,6 +33,40 @@ namespace Designer.Components
     public class ToolboxItemDescriptorCollection : ObservableCollection<ToolboxItemDescriptor>
     {
         internal ToolboxControl Control { get; set; } = null;
+
+        /// <summary>
+        /// Adds all activities from the given assembly
+        /// </summary>
+        public int AddFromAssembly(Assembly lib)
+        {
+            Type typeofactivity = typeof (Activity);
+
+            // get the filename
+            var filename = new Uri(lib.CodeBase).LocalPath;
+            var categoryname = Path.GetFileNameWithoutExtension(filename);
+
+            foreach (Type type in lib.GetExportedTypes().Where(t => t.IsSubclassOf(typeofactivity)))
+            {
+                if (!type.IsAbstract && type.GetConstructor(BindingFlags.Instance | BindingFlags.Public, null, new Type[0], null) != null)
+                {
+                    try
+                    {
+                        this.Add(new ToolboxItemDescriptor(categoryname, type));
+                    }
+                    catch (Exception)
+                    {
+                        //throw;
+                    }
+                }
+            }
+            
+            return 0;
+        }
+
+        public int AddFromFile(string fileName)
+        {
+            return 0;
+        }
 
     }
 
@@ -127,8 +164,6 @@ namespace Designer.Components
                 category.Add(new ToolboxItemWrapper(item.ActivityType));
                 
             }
-
-            Debug.WriteLine("Ein Element wurde hinzugefügt");
         }
     }
 }

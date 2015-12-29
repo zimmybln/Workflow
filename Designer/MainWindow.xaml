@@ -18,7 +18,9 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="5" />
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="5" />
             <ColumnDefinition Width="200" />
         </Grid.ColumnDefinitions>
 
@@ -27,13 +29,13 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <fluent:Ribbon Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Height="Auto" Visibility="Visible">
+        <fluent:Ribbon Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="0" Height="Auto" Visibility="Visible">
             <fluent:Ribbon.Menu>
                 <fluent:Backstage>
                     <fluent:BackstageTabControl>
                         <fluent:BackstageTabItem Header="New">
                             <Grid>
-                                <ListBox Margin="5" Background="AntiqueWhite"></ListBox>
+                                
                             </Grid>
                             
                          </fluent:BackstageTabItem>
@@ -44,21 +46,26 @@
             </fluent:Ribbon.Menu>
             
             <fluent:RibbonTabItem Header="Start">
-                <fluent:RibbonGroupBox Header="Group">
-                    <fluent:Button Name="buttonGreen" Header="Green"  
-    Icon="Images\Green.png"             
-    LargeIcon="Images\GreenLarge.png" />
-                    <fluent:Button Name="buttonGray" Header="Grey" Icon="Images\Gray.png"  
-    LargeIcon="Images\GrayLarge.png" />
+                
+                <fluent:RibbonGroupBox Header="Execution">
+                    <fluent:Button Header="Run" Command="{Binding ExecuteWorkflow}" LargeIcon="Resources\32x32\Run.png">
+                        
+                    </fluent:Button>
                 </fluent:RibbonGroupBox>
             </fluent:RibbonTabItem>
         </fluent:Ribbon>
-        
-        
-        <controls:WorkflowEditor Grid.Column="1" Grid.Row="1" SelectedWorkflow="{Binding CurrentWorkflow}" />
 
-        <Toolbox:ToolboxControl Grid.Column="0" Grid.Row="1" components:ToolboxAdditions.ToolboxItems="{Binding ToolboxItems}" Margin="0">
-        </Toolbox:ToolboxControl>
+        <Toolbox:ToolboxControl Grid.Column="0" Grid.Row="1" components:ToolboxAdditions.ToolboxItems="{Binding ToolboxItems}" Margin="0" HorizontalAlignment="Stretch" />
+
+        <GridSplitter Grid.Column="1" Width="5" Grid.Row="1" HorizontalAlignment="Stretch"/>
+        
+        <controls:WorkflowEditor Grid.Column="2" Grid.Row="1" SelectedWorkflow="{Binding CurrentWorkflow}" x:Name="WorkflowEditor"/>
+
+        <GridSplitter Grid.Column="3" Grid.Row="1" Width="5" HorizontalAlignment="Stretch"/>
+        
+        <ContentControl Grid.Column="4" Grid.Row="1" Content="{Binding ElementName=WorkflowEditor, Path=PropertyView}"/>
+
+        
 
     </Grid>
 </fluent:RibbonWindow>

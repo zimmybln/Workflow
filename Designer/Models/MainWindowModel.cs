@@ -9,6 +9,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using Designer.Services;
 
 namespace Designer.Models
 {
@@ -18,17 +20,36 @@ namespace Designer.Models
 
         public MainWindowModel()
         {
-            ToolboxItems.Add(new ToolboxItemDescriptor("Steuerstrukturen", typeof(If)));
+            ExecuteWorkflow = new MethodCommand(OnExecuteWorkflow);
+            
+            ToolboxItems.AddFromAssembly(typeof (If).Assembly);
 
+            var notifications = ApplicationServices.GetService<NotificationService>();
+
+            if (notifications != null)
+            {
+                notifications.OnNotify += OnNotify;
+            }
+            
+        }
+
+        private void OnExecuteWorkflow(ICommand command, object o)
+        {
+            var workflowexecution = ApplicationServices.GetService<IWorkflowExecutionService>();
+
+            workflowexecution.Execute(CurrentWorkflow);
+        }
+
+        private void OnNotify(object sender, INotification notification)
+        {
+            
         }
 
 
         protected override void OnLoaded()
         {
             CurrentWorkflow = CreateDefaultWorkflow();
-
             
-
             //ToolboxItems.Add.AddRange(new[]
             //{
             //        new ToolboxItemDescriptor(resCourse, typeof(Sequence)),
@@ -57,9 +78,17 @@ namespace Designer.Models
         }
 
 
+
+
+
+
+
+        
         #region Properties
 
-        public ToolboxItemDescriptorCollection ToolboxItems { get; private set; } = new ToolboxItemDescriptorCollection();
+        public ICommand ExecuteWorkflow { get; }
+
+        public ToolboxItemDescriptorCollection ToolboxItems { get; } = new ToolboxItemDescriptorCollection();
 
         public Activity CurrentWorkflow
         {
@@ -75,8 +104,6 @@ namespace Designer.Models
         }
 
         #endregion
-
-
 
     }
 }
