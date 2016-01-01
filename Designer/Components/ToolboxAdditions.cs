@@ -63,6 +63,26 @@ namespace Designer.Components
             return 0;
         }
 
+        public void AddRange(string categoryName, params Type[] items)
+        {
+            Type typeofactivity = typeof(Activity);
+
+            foreach (Type type in items.Where(t => t.IsSubclassOf(typeofactivity)))
+            {
+                if (!type.IsAbstract && type.GetConstructor(BindingFlags.Instance | BindingFlags.Public, null, new Type[0], null) != null)
+                {
+                    try
+                    {
+                        this.Add(new ToolboxItemDescriptor(categoryName, type));
+                    }
+                    catch (Exception)
+                    {
+                        //throw;
+                    }
+                }
+            }
+        }
+
         public int AddFromFile(string fileName)
         {
             return 0;

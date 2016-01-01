@@ -77,10 +77,10 @@ namespace Designer.Controls
             
             grdDesignerHost.Children.Add(_coreDesigner.View);
             PropertyView = _coreDesigner.PropertyInspectorView;
+            
             OutlineView = _coreDesigner.OutlineView;
 
-
-
+            
             _coreDesigner.ModelChanged += WorkflowDesignerOnModelChanged;
 
             // Mögliche Dienste:
@@ -143,11 +143,7 @@ namespace Designer.Controls
 
                 var validationservice = wd._coreDesigner.Context.Services.GetService<ValidationService>();
 
-                if (validationservice != null)
-                {
-                    validationservice.ValidateWorkflow();
-                }
-
+                validationservice?.ValidateWorkflow();
             }
         }
 

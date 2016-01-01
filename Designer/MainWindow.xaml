@@ -12,6 +12,9 @@
         mc:Ignorable="d"
         Title="MainWindow" 
         components:WindowBehavior.Loaded="{Binding LoadedAdapter}">
+    <Window.Resources>
+        <components:WarningToColorConverter ErrorFill="Red" WarningFill="Yellow" x:Key="WarningToColorConverter" />
+    </Window.Resources>
     <Window.DataContext>
         <models:MainWindowModel />
     </Window.DataContext>
@@ -27,6 +30,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <fluent:Ribbon Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="0" Height="Auto" Visibility="Visible">
@@ -59,13 +63,47 @@
 
         <GridSplitter Grid.Column="1" Width="5" Grid.Row="1" HorizontalAlignment="Stretch"/>
         
-        <controls:WorkflowEditor Grid.Column="2" Grid.Row="1" SelectedWorkflow="{Binding CurrentWorkflow}" x:Name="WorkflowEditor"/>
+        
+        <DockPanel Grid.Column="2" Grid.Row="1" Dock="Bottom" LastChildFill="True">
+            <TabControl DockPanel.Dock="Bottom" MinHeight="100">
+                <TabItem Header="Errors">
+                    <Grid>
+                        <ListBox Margin="0" ItemsSource="{Binding ElementName=WorkflowEditor, Path=Messages}" >
+                            <ListBox.ItemTemplate>
+                                <DataTemplate DataType="controls:EditorMessage">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="28" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" MinHeight="26"  />
+                                        </Grid.RowDefinitions>
+                                        <Rectangle Grid.Row="0" Grid.Column="0" Width="12" Height="12" VerticalAlignment="Center" HorizontalAlignment="Center" Stroke="Black" StrokeThickness="1"
+                                                   Fill="{Binding IsWarning, Converter={StaticResource WarningToColorConverter}}"/>
+                                        <TextBlock Text="{Binding Message}" Grid.Row="0" Grid.Column="1" Margin="2" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                    </Grid>
+
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Output">
+                    <ListBox Margin="0" ItemsSource="{Binding TraceMessages}" />
+                </TabItem>
+            </TabControl>
+            
+            <controls:WorkflowEditor SelectedWorkflow="{Binding CurrentWorkflow}" x:Name="WorkflowEditor"/>
+        </DockPanel>
+        
+        
 
         <GridSplitter Grid.Column="3" Grid.Row="1" Width="5" HorizontalAlignment="Stretch"/>
         
         <ContentControl Grid.Column="4" Grid.Row="1" Content="{Binding ElementName=WorkflowEditor, Path=PropertyView}"/>
 
-        
+        <StatusBar Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="5" Height="28" />
 
     </Grid>
 </fluent:RibbonWindow>

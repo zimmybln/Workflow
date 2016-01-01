@@ -54,10 +54,6 @@
       <HintPath>..\packages\Fluent.Ribbon.4.0.0-dev0286\lib\net45\System.Windows.Interactivity.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Workflow.Activities" />
-    <Reference Include="System.Workflow.ComponentModel" />
-    <Reference Include="System.Workflow.Runtime" />
-    <Reference Include="System.WorkflowServices" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -77,6 +73,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Components\MethodCommand.cs" />
+    <Compile Include="Components\WarningToColorConverter.cs" />
+    <Compile Include="Components\Workflow\ActivityExtensions.cs" />
+    <Compile Include="Models\ITraceListenerAdapter.cs" />
+    <Compile Include="Models\TextToUiWriter.cs" />
     <Compile Include="Services\IWorkflowExecutionService.cs" />
     <Compile Include="Services\NotificationService.cs" />
     <Compile Include="Services\WorkflowExecutionService.cs" />

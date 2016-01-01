@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace Designer.Components
 {
@@ -14,6 +15,8 @@ namespace Designer.Components
 
         public ModelBase()
         {
+            Dispatcher = Dispatcher.CurrentDispatcher;
+            
             _loadedadapter = new LoadedAdapter(OnLoaded);
         }
         
@@ -27,6 +30,7 @@ namespace Designer.Components
 
         }
 
+        protected Dispatcher Dispatcher { get; }
 
         #region INotifyPropertyChanged
 

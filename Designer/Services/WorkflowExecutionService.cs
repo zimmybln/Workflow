@@ -1,4 +1,5 @@
-﻿using System.Activities;
+﻿using System;
+using System.Activities;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 
@@ -19,28 +20,14 @@ namespace Designer.Services
 
         public void Execute(Activity activity, WorkflowExecutionOptions options)
         {
+            
             var app = new WorkflowApplication(activity);
-
-            Trace.Listeners.Add(new DebugListener());
+            
+           // Trace.Listeners.AddRange(options.TraceListeners.ToArray());
 
             app.Run();
 
+            
         }
-    }
-
-    public class DebugListener : TraceListener
-    {
-        public override void Write(string message)
-        {
-            Debug.Write(message);
-        }
-
-        public override void WriteLine(string message)
-        {
-            Debug.WriteLine(message);
-        }
-    }
-
-
-    
+    }   
 }
