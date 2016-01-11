@@ -17,6 +17,9 @@ using System.Collections.ObjectModel;
 using System.Activities.Presentation.Validation;
 using System.Activities.Core.Presentation;
 using System.Activities.Presentation;
+using System.Activities.Presentation.Model;
+using System.Activities.Presentation.View;
+using System.Diagnostics;
 using System.Runtime.Versioning;
 using Designer.Controls.Services;
 
@@ -56,7 +59,17 @@ namespace Designer.Controls
                                                                                                 new PropertyMetadata(false));
 
         private WorkflowDesigner _coreDesigner;
+        private readonly List<ModelItem> _currentSelectedItems = new List<ModelItem>();
 
+        public static readonly RoutedEvent SelectionChangedEvent = EventManager.RegisterRoutedEvent("SelectionChanged",
+            RoutingStrategy.Bubble, typeof (SelectionChangedEventHandler), typeof (WorkflowEditor));
+
+        public event SelectionChangedEventHandler SelectionChanged
+        {
+            add { AddHandler(SelectionChangedEvent, value);}
+            remove { RemoveHandler(SelectionChangedEvent, value);}
+        }
+        
         /// <summary>
         ///  Initialisiert eine neue Instanz des Workflowdesigners
         /// </summary>
@@ -73,8 +86,12 @@ namespace Designer.Controls
             // create and configure the designer control
             _coreDesigner = new WorkflowDesigner();
 
+            // apply the services / configurations
             _coreDesigner.Context.Services.Publish(typeof(IValidationErrorService), new ValidationErrorService(this.Messages));
-            
+            _coreDesigner.Context.Items.Subscribe(typeof(Selection), OnSelectionChanged);
+
+
+
             grdDesignerHost.Children.Add(_coreDesigner.View);
             PropertyView = _coreDesigner.PropertyInspectorView;
             
@@ -93,6 +110,22 @@ namespace Designer.Controls
             configurationService.RubberBandSelectionEnabled = true;
             configurationService.TargetFrameworkName = new FrameworkName(".NETFramework,Version=v4.5");
 
+        }
+
+        private void OnSelectionChanged(ContextItem item)
+        {
+            var selection = item as Selection;
+
+            if (selection?.PrimarySelection == null)
+                return;
+
+            var addedItems = selection.SelectedObjects.ToList();
+            var args = new SelectionChangedEventArgs(SelectionChangedEvent, _currentSelectedItems, addedItems);
+            RaiseEvent(args);
+
+            // keep the current selected items
+            _currentSelectedItems.Clear();
+            _currentSelectedItems.AddRange(addedItems);
         }
 
         private void WorkflowDesignerOnModelChanged(object Sender, EventArgs Args)
@@ -146,7 +179,6 @@ namespace Designer.Controls
                 validationservice?.ValidateWorkflow();
             }
         }
-
 
 
     }

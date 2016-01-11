@@ -17,9 +17,10 @@ namespace Designer.Models
         public MainWindowModel()
         {
             ExecuteWorkflow = new MethodCommand(OnExecuteWorkflow);
+            CloseCommand = new MethodCommand(OnCloseCommand);
            
             ToolboxItems.AddRange("Default", typeof(If), typeof(Sequence), typeof(While), typeof(DoWhile), typeof(Assign), typeof(Switch<>), typeof(WriteLine),
-                                            typeof(TerminateWorkflow), typeof(Delay), typeof(InvokeMethod), typeof(InvokeAction), typeof(Pick));
+                                            typeof(TerminateWorkflow), typeof(Delay), typeof(InvokeMethod));
             ToolboxItems.AddRange("ErrorHandling", typeof(Throw), typeof(TryCatch), typeof(Rethrow));
 
             var notifications = ApplicationServices.GetService<NotificationService>();
@@ -47,6 +48,11 @@ namespace Designer.Models
             var executable = CurrentWorkflow.Clone();
 
             workflowexecution.Execute(executable, options);
+        }
+
+        private void OnCloseCommand(ICommand command, object o)
+        {
+            Application.Current.Shutdown();
         }
 
         private void OnNotify(object sender, INotification notification)
@@ -81,6 +87,8 @@ namespace Designer.Models
         #region Properties
 
         public ICommand ExecuteWorkflow { get; }
+
+        public ICommand CloseCommand { get; }
 
         public ToolboxItemDescriptorCollection ToolboxItems { get; } = new ToolboxItemDescriptorCollection();
         

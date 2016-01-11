@@ -44,7 +44,7 @@
                             
                          </fluent:BackstageTabItem>
                         <fluent:BackstageTabItem Header="Print"/>
-                        <fluent:Button Header="Blue"/>
+                        <fluent:Button Header="Close" Command="{Binding CloseCommand}"/>
                     </fluent:BackstageTabControl>
                 </fluent:Backstage>
             </fluent:Ribbon.Menu>
@@ -94,7 +94,7 @@
                 </TabItem>
             </TabControl>
             
-            <controls:WorkflowEditor SelectedWorkflow="{Binding CurrentWorkflow}" x:Name="WorkflowEditor"/>
+            <controls:WorkflowEditor SelectedWorkflow="{Binding CurrentWorkflow}" x:Name="WorkflowEditor"  />
         </DockPanel>
         
         
