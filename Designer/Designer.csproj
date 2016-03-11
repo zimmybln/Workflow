@@ -75,6 +75,7 @@
     <Compile Include="Components\MethodCommand.cs" />
     <Compile Include="Components\WarningToColorConverter.cs" />
     <Compile Include="Components\Workflow\ActivityExtensions.cs" />
+    <Compile Include="Components\Workflow\StateChangeTrackingParticipant.cs" />
     <Compile Include="Models\ITraceListenerAdapter.cs" />
     <Compile Include="Models\TextToUiWriter.cs" />
     <Compile Include="Services\IPersistenceService.cs" />

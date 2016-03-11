@@ -8,13 +8,17 @@
         xmlns:controls="clr-namespace:Designer.Controls"
         xmlns:models="clr-namespace:Designer.Models"
         xmlns:components="clr-namespace:Designer.Components"
-        xmlns:Toolbox="clr-namespace:System.Activities.Presentation.Toolbox;assembly=System.Activities.Presentation"
+        xmlns:properties="clr-namespace:Designer.Properties"
+        xmlns:toolbox="clr-namespace:System.Activities.Presentation.Toolbox;assembly=System.Activities.Presentation"
         mc:Ignorable="d"
         Title="MainWindow" 
         components:WindowBehavior.Loaded="{Binding LoadedAdapter}">
     <Window.Resources>
         <components:WarningToColorConverter ErrorFill="Red" WarningFill="Yellow" x:Key="WarningToColorConverter" />
     </Window.Resources>
+    <Window.InputBindings>
+        <KeyBinding Key="F5" Command="{Binding ExecuteWorkflow}" />
+    </Window.InputBindings>
     <Window.DataContext>
         <models:MainWindowModel />
     </Window.DataContext>
@@ -35,7 +39,7 @@
 
         <fluent:Ribbon Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="0" Height="Auto" Visibility="Visible">
             <fluent:Ribbon.Menu>
-                <fluent:Backstage>
+                <fluent:Backstage IsOpen="{Binding IsBackstageOpen, Mode=TwoWay}">
                     <fluent:BackstageTabControl>
                         <fluent:BackstageTabItem Header="New">
                             <Grid>
@@ -43,7 +47,36 @@
                             </Grid>
                             
                          </fluent:BackstageTabItem>
+                         <fluent:BackstageTabItem Header="Load">
+                            <Grid>
+                                <Button Content="Just load" Width="80" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Command="{Binding LoadWorkflowCommand}"/>
+                            </Grid>
+                        </fluent:BackstageTabItem>
+                        <fluent:BackstageTabItem Header="Save">
+                            <Grid>
+                                <Button Content="Just save" Width="80" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Command="{Binding SaveWorkflowCommand}"/>
+                            </Grid>
+                        </fluent:BackstageTabItem>
+                        <fluent:BackstageTabItem Header="Save As">
+                            <Grid>
+                                
+                            </Grid>
+                        </fluent:BackstageTabItem>
                         <fluent:BackstageTabItem Header="Print"/>
+                        <fluent:BackstageTabItem Header="Options">
+                            <StackPanel Orientation="Vertical">
+                                <Grid Margin="50,50,0,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="25" />
+                                        <RowDefinition Height="40" />
+                                    </Grid.RowDefinitions>
+                                    
+                                    <AccessText Text="Behavior of activies" FontWeight="Bold" Grid.Row="0" />
+                                    <CheckBox Content="Load activities" IsChecked="{Binding LoadActivities, Source={x:Static properties:Settings.Default}}" Grid.Row="1" VerticalAlignment="Center" Margin="5" />
+                                    
+                                </Grid>
+                            </StackPanel>
+                        </fluent:BackstageTabItem>
                         <fluent:Button Header="Close" Command="{Binding CloseCommand}"/>
                     </fluent:BackstageTabControl>
                 </fluent:Backstage>
@@ -58,14 +91,26 @@
                 </fluent:RibbonGroupBox>
             </fluent:RibbonTabItem>
         </fluent:Ribbon>
+        
+        <TabControl Grid.Row="1" Grid.Column="0" TabStripPlacement="Bottom">
+            
+            <TabItem Header="Activities">
+                <toolbox:ToolboxControl components:ToolboxAdditions.ToolboxItems="{Binding ToolboxItems}" Margin="0" HorizontalAlignment="Stretch" />        
+            </TabItem>
+            
+            <!--<TabItem Header="Vorlagen">
+                <ListView ItemsSource="{Binding TemplateItems}" x:Name="lstTemplates" PreviewMouseLeftButtonDown="LstTemplates_OnPreviewMouseLeftButtonDown" PreviewMouseMove="LstTemplates_OnPreviewMouseMove"></ListView>
+            </TabItem>-->
+            
+        </TabControl>
 
-        <Toolbox:ToolboxControl Grid.Column="0" Grid.Row="1" components:ToolboxAdditions.ToolboxItems="{Binding ToolboxItems}" Margin="0" HorizontalAlignment="Stretch" />
+        
 
         <GridSplitter Grid.Column="1" Width="5" Grid.Row="1" HorizontalAlignment="Stretch"/>
         
         
         <DockPanel Grid.Column="2" Grid.Row="1" Dock="Bottom" LastChildFill="True">
-            <TabControl DockPanel.Dock="Bottom" MinHeight="100">
+            <TabControl DockPanel.Dock="Bottom" MinHeight="100" Height="150">
                 <TabItem Header="Errors">
                     <Grid>
                         <ListBox Margin="0" ItemsSource="{Binding ElementName=WorkflowEditor, Path=Messages}" >
@@ -90,7 +135,7 @@
                     </Grid>
                 </TabItem>
                 <TabItem Header="Output">
-                    <ListBox Margin="0" ItemsSource="{Binding TraceMessages}" />
+                    <ListBox Margin="0" ItemsSource="{Binding TraceMessages}"  />
                 </TabItem>
             </TabControl>
             
@@ -98,10 +143,18 @@
         </DockPanel>
         
         
-
         <GridSplitter Grid.Column="3" Grid.Row="1" Width="5" HorizontalAlignment="Stretch"/>
         
-        <ContentControl Grid.Column="4" Grid.Row="1" Content="{Binding ElementName=WorkflowEditor, Path=PropertyView}"/>
+        <TabControl Grid.Column="4" Grid.Row="1" TabStripPlacement="Bottom">
+            <TabItem Header="Properties">
+                <ContentControl Content="{Binding ElementName=WorkflowEditor, Path=PropertyView}"/>        
+            </TabItem>
+            <TabItem Header="Outline">
+                <ContentControl Content="{Binding ElementName=WorkflowEditor, Path=OutlineView}"/>
+            </TabItem>
+        </TabControl>
+        
+        
 
         <StatusBar Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="5" Height="28" />
 

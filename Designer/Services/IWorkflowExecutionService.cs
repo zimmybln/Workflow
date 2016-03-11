@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Activities;
+using System.Activities.Tracking;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -12,7 +13,7 @@ namespace Designer.Services
 {
     public class WorkflowExecutionOptions
     {
-        public List<TextWriter> TraceListeners { get; } = new List<TextWriter>(); 
+        public List<TrackingParticipant> TrackingParticipants { get; } = new List<TrackingParticipant>(); 
     }
 
 

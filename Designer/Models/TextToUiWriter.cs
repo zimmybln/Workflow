@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.IO.Packaging;
 using System.Text;
 
 namespace Designer.Models
@@ -17,11 +19,15 @@ namespace Designer.Models
 
         public override Encoding Encoding => Encoding.ASCII;
 
+        public string Prefix { get; set; }
+
         public override void WriteLine(string value)
         {
             base.WriteLine(value);
 
-            _adapter.WriteLine(value);
+            string prefix = String.IsNullOrEmpty(Prefix) ? "" : Prefix;
+
+            _adapter.WriteLine(prefix + value);
         }
     }
 }

@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:Designer.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <Grid Name="grdDesignerHost">
+    <Grid Name="grdDesignerHost" AllowDrop="True" DragEnter="GrdDesignerHost_OnDragEnter">
 
     </Grid>
 </UserControl>

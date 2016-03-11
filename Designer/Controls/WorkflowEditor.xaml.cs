@@ -58,7 +58,7 @@ namespace Designer.Controls
         public static readonly DependencyProperty ChangedProperty = DependencyProperty.Register("Changed", typeof(bool), typeof(WorkflowEditor),
                                                                                                 new PropertyMetadata(false));
 
-        private WorkflowDesigner _coreDesigner;
+        public WorkflowDesigner _coreDesigner;
         private readonly List<ModelItem> _currentSelectedItems = new List<ModelItem>();
 
         public static readonly RoutedEvent SelectionChangedEvent = EventManager.RegisterRoutedEvent("SelectionChanged",
@@ -89,12 +89,11 @@ namespace Designer.Controls
             // apply the services / configurations
             _coreDesigner.Context.Services.Publish(typeof(IValidationErrorService), new ValidationErrorService(this.Messages));
             _coreDesigner.Context.Items.Subscribe(typeof(Selection), OnSelectionChanged);
-
-
+            
 
             grdDesignerHost.Children.Add(_coreDesigner.View);
+
             PropertyView = _coreDesigner.PropertyInspectorView;
-            
             OutlineView = _coreDesigner.OutlineView;
 
             
@@ -105,7 +104,17 @@ namespace Designer.Controls
 
             var configurationService =
                 _coreDesigner.Context.Services.GetRequiredService<DesignerConfigurationService>();
-
+            
+            configurationService.AutoConnectEnabled = true;
+            configurationService.AutoSplitEnabled = true;
+            configurationService.AutoSurroundWithSequenceEnabled = true;
+            configurationService.BackgroundValidationEnabled = true;
+            configurationService.MultipleItemsContextMenuEnabled = true;
+            configurationService.MultipleItemsDragDropEnabled = true;
+            configurationService.NamespaceConversionEnabled = false;
+            configurationService.PanModeEnabled = true;
+            configurationService.LoadingFromUntrustedSourceEnabled = false;
+            
             configurationService.AnnotationEnabled = true;
             configurationService.RubberBandSelectionEnabled = true;
             configurationService.TargetFrameworkName = new FrameworkName(".NETFramework,Version=v4.5");
@@ -180,6 +189,16 @@ namespace Designer.Controls
             }
         }
 
+        private void GrdDesignerHost_OnDragEnter(object sender, DragEventArgs e)
+        {
 
+        }
+
+        private void GrdDesignerHost_OnDrop(object sender, DragEventArgs e)
+        {
+            var data = e.Data.GetData(DragDropHelper.WorkflowItemTypeNameFormat);
+
+
+        }
     }
 }

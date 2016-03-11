@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using Designer.Components;
+using Designer.Properties;
 
 namespace Designer
 {
@@ -17,6 +18,8 @@ namespace Designer
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+
+            Settings.Default.Reload();
             
             ApplicationServices.BeginRegister();
             ApplicationServices.RegisterModule(this.GetType().Assembly);
@@ -25,6 +28,13 @@ namespace Designer
             var mainWindow = new MainWindow();
 
             mainWindow.Show();
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            base.OnExit(e);
+            
+            Settings.Default.Save();
         }
     }
 }

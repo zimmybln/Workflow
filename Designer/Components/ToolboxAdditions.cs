@@ -17,10 +17,10 @@ namespace Designer.Components
     public class ToolboxItemDescriptor
     {
 
-        public ToolboxItemDescriptor(string GroupName, Type Type)
+        public ToolboxItemDescriptor(string groupName, Type type)
         {
-            this.Group = GroupName;
-            this.ActivityType = Type;
+            this.Group = groupName;
+            this.ActivityType = type;
         }
 
         public string Name { get; set; }
@@ -28,11 +28,46 @@ namespace Designer.Components
         public string Group { get; private set; }
 
         public Type ActivityType { get; private set; }
+
+        
     }
 
     public class ToolboxItemDescriptorCollection : ObservableCollection<ToolboxItemDescriptor>
     {
         internal ToolboxControl Control { get; set; } = null;
+        internal List<string> Directories { get; set; } = new List<string>(); 
+
+        public int AddFromDirectory(string directoryName)
+        {
+            // verify if the directory is rooted
+            if (!Path.IsPathRooted(directoryName))
+            {
+                directoryName = Path.Combine(Environment.CurrentDirectory, directoryName);
+            }
+
+            if (!Directory.Exists(directoryName))
+                return 0;
+            
+            foreach (string file in Directory.GetFiles(directoryName, "*.dll"))
+            {
+                Assembly assembly = Assembly.LoadFile(Path.Combine(directoryName, file));
+
+                AddFromAssembly(assembly);
+
+                if (!Directories.Contains(directoryName))
+                {
+                    Directories.Add(directoryName);
+                }
+            }
+
+            return 0;
+        }
+
+        
+        public int AddFromFile(string assemblyFileName)
+        {
+            return 0;
+        }
 
         /// <summary>
         /// Adds all activities from the given assembly
@@ -83,10 +118,7 @@ namespace Designer.Components
             }
         }
 
-        public int AddFromFile(string fileName)
-        {
-            return 0;
-        }
+
 
     }
 
@@ -118,6 +150,27 @@ namespace Designer.Components
 
             var ctl = element as ToolboxControl;
             var lst = e.NewValue as ToolboxItemDescriptorCollection;
+
+            var resolveHandler = new ResolveEventHandler(delegate(object o, ResolveEventArgs args)
+            {
+                var filename = args.Name.Split(',')[0];
+
+                foreach (string directory in lst.Directories)
+                {
+                    var assemblyfile = Path.Combine(directory, filename) + ".dll";
+
+
+                    if (File.Exists(assemblyfile))
+                    {
+                        return Assembly.LoadFile(assemblyfile);
+                    }
+                }
+
+                return null;
+            });
+
+            AppDomain.CurrentDomain.AssemblyResolve += resolveHandler;
+
            
             if (lst != null)
             {
@@ -152,6 +205,8 @@ namespace Designer.Components
                     ctl.Categories.Add(category);
 
                 }
+
+                AppDomain.CurrentDomain.AssemblyResolve -= resolveHandler;
 
                 lst.Control = ctl;
                 lst.CollectionChanged += OnCollectionChanged;
