@@ -95,7 +95,6 @@ namespace Designer.Controls
 
             PropertyView = _coreDesigner.PropertyInspectorView;
             OutlineView = _coreDesigner.OutlineView;
-
             
             _coreDesigner.ModelChanged += WorkflowDesignerOnModelChanged;
 
@@ -105,19 +104,22 @@ namespace Designer.Controls
             var configurationService =
                 _coreDesigner.Context.Services.GetRequiredService<DesignerConfigurationService>();
             
-            configurationService.AutoConnectEnabled = true;
-            configurationService.AutoSplitEnabled = true;
-            configurationService.AutoSurroundWithSequenceEnabled = true;
-            configurationService.BackgroundValidationEnabled = true;
-            configurationService.MultipleItemsContextMenuEnabled = true;
-            configurationService.MultipleItemsDragDropEnabled = true;
-            configurationService.NamespaceConversionEnabled = false;
-            configurationService.PanModeEnabled = true;
-            configurationService.LoadingFromUntrustedSourceEnabled = false;
-            
-            configurationService.AnnotationEnabled = true;
-            configurationService.RubberBandSelectionEnabled = true;
-            configurationService.TargetFrameworkName = new FrameworkName(".NETFramework,Version=v4.5");
+            if (configurationService != null)
+            {
+                configurationService.AutoConnectEnabled = true;
+                configurationService.AutoSplitEnabled = true;
+                configurationService.AutoSurroundWithSequenceEnabled = true;
+                configurationService.BackgroundValidationEnabled = true;
+                configurationService.MultipleItemsContextMenuEnabled = true;
+                configurationService.MultipleItemsDragDropEnabled = true;
+                configurationService.NamespaceConversionEnabled = false;
+                configurationService.PanModeEnabled = true;
+                configurationService.LoadingFromUntrustedSourceEnabled = false;
+
+                configurationService.AnnotationEnabled = true;
+                configurationService.RubberBandSelectionEnabled = true;
+                configurationService.TargetFrameworkName = new FrameworkName(".NETFramework,Version=v4.5");
+            }
 
         }
 

@@ -10,6 +10,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Threading;
 using System.Xaml;
 using Designer.Components.Workflow;
 using Designer.Properties;
@@ -63,8 +64,8 @@ namespace Designer.Models
             
         }
 
-        private void OnExecuteWorkflow(ICommand command, object o)
-        {
+        private async void OnExecuteWorkflow(ICommand command, object o)
+        { 
             // reset all the UI Output
             TraceMessages.Clear();
 
@@ -74,13 +75,17 @@ namespace Designer.Models
             // execute the workflow
             var workflowexecution = ApplicationServices.GetService<IWorkflowExecutionService>();
 
-            var options = new WorkflowExecutionOptions();
+            var options = new WorkflowExecutionOptions()
+            {
+                TraceWriter = this
+            };
 
-            options.TrackingParticipants.Add(new StateChangeTrackingParticipant(this));
+            options.TrackingParticipants.Add(new StateChangeTrackingParticipant(this, StateChangeRecords.All));
             
             var executable = CurrentWorkflow.Clone();
 
-            workflowexecution.Execute(executable, options);
+            await workflowexecution.Execute(executable, options);
+            
         }
 
         private void OnSaveWorkflowCommand(ICommand command, object parameter)
@@ -159,7 +164,7 @@ namespace Designer.Models
         {
             if (!Dispatcher.CheckAccess())
             {
-                Dispatcher.Invoke(() => TraceMessages.Add(message));
+                Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action) (() => {TraceMessages.Add(message);}));
             }
             else
             {

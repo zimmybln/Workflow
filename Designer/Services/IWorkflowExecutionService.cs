@@ -8,19 +8,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Designer.Components;
+using Designer.Models;
 
 namespace Designer.Services
 {
     public class WorkflowExecutionOptions
     {
+        public IWriterAdapter TraceWriter { get; set; } = null;
+        
         public List<TrackingParticipant> TrackingParticipants { get; } = new List<TrackingParticipant>(); 
     }
 
 
     public interface IWorkflowExecutionService : IService
     {
-        void Execute(Activity activity);
-
-        void Execute(Activity activity, WorkflowExecutionOptions options);
+        Task Execute(Activity activity, WorkflowExecutionOptions options);
     }
 }

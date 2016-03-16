@@ -3,36 +3,70 @@ using System.Activities;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Designer.Models;
 
 namespace Designer.Services
 {
     [Export(typeof(IWorkflowExecutionService))]
     public class WorkflowExecutionService : IWorkflowExecutionService
     {
-        public void Execute(Activity activity)
+        public Task Execute(Activity activity, WorkflowExecutionOptions options)
         {
-            var options = new WorkflowExecutionOptions()
+            return Task.Run(() => 
             {
-                // some default settings
-            }; 
+                AutoResetEvent resetevent = new AutoResetEvent(false);
+                IWriterAdapter writer = null;
 
-            Execute(activity, options);
-        }
+                var app = new WorkflowApplication(activity);
 
-        public void Execute(Activity activity, WorkflowExecutionOptions options)
-        {
-            
-            var app = new WorkflowApplication(activity);
-            
-            if (options != null)
-            {
-                // add all tracking participants
-                options.TrackingParticipants.ForEach(tp => app.Extensions.Add(tp));
-            }
+                if (options != null)
+                {
+                    writer = options.TraceWriter;
 
-            app.Run();
+                    // add all tracking participants
+                    options.TrackingParticipants.ForEach(tp => app.Extensions.Add(tp));
+                }
 
-            
+                app.Completed = (args =>
+                {
+                    writer?.WriteLine($"Workflow completed as {args.CompletionState}");
+                });
+
+
+                app.Aborted = (args =>
+                {
+                    resetevent.Set();
+                });
+
+                app.OnUnhandledException = (args =>
+                {
+                    writer?.WriteLine("Unhandled exception");
+                    return UnhandledExceptionAction.Cancel;
+                });
+
+                app.Unloaded = (args =>
+                {
+                    writer?.WriteLine("Workflow unloaded");
+                    resetevent.Set();
+                });
+
+                app.OnUnhandledException = (args =>
+                {
+                    return UnhandledExceptionAction.Cancel;
+                });
+
+                app.PersistableIdle = (args =>
+                {
+                    return PersistableIdleAction.Unload;
+                });
+
+                app.Run();
+
+                // wait for finish the execution
+                resetevent.WaitOne();
+            });
         }
     }   
 }

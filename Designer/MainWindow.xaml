@@ -113,7 +113,7 @@
             <TabControl DockPanel.Dock="Bottom" MinHeight="100" Height="150">
                 <TabItem Header="Errors">
                     <Grid>
-                        <ListBox Margin="0" ItemsSource="{Binding ElementName=WorkflowEditor, Path=Messages}" >
+                        <ListBox Margin="0" ItemsSource="{Binding ElementName=WorkflowEditor, Path=Messages}"  >
                             <ListBox.ItemTemplate>
                                 <DataTemplate DataType="controls:EditorMessage">
                                     <Grid>
