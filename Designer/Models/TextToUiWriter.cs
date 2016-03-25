@@ -27,7 +27,7 @@ namespace Designer.Models
 
             string prefix = String.IsNullOrEmpty(Prefix) ? "" : Prefix;
 
-            _adapter.WriteLine(prefix + $"{DateTime.Now:HH:mm:ss.fff}" + value);
+            _adapter.WriteLine(prefix + value);
         }
     }
 }

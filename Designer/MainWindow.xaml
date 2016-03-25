@@ -10,8 +10,9 @@
         xmlns:components="clr-namespace:Designer.Components"
         xmlns:properties="clr-namespace:Designer.Properties"
         xmlns:toolbox="clr-namespace:System.Activities.Presentation.Toolbox;assembly=System.Activities.Presentation"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="MainWindow" 
+        Title="{x:Static components:ApplicationServices.Title}" 
         components:WindowBehavior.Loaded="{Binding LoadedAdapter}">
     <Window.Resources>
         <components:WarningToColorConverter ErrorFill="Red" WarningFill="Yellow" x:Key="WarningToColorConverter" />
@@ -84,7 +85,7 @@
             
             <fluent:RibbonTabItem Header="Start">
                 
-                <fluent:RibbonGroupBox Header="Execution">
+                <fluent:RibbonGroupBox Header="Execution" Width="100" HorizontalContentAlignment="Center">
                     <fluent:Button Header="Run" Command="{Binding ExecuteWorkflow}" LargeIcon="Resources\32x32\Run.png">
                         
                     </fluent:Button>
@@ -128,14 +129,41 @@
                                                    Fill="{Binding IsWarning, Converter={StaticResource WarningToColorConverter}}"/>
                                         <TextBlock Text="{Binding Message}" Grid.Row="0" Grid.Column="1" Margin="2" VerticalAlignment="Center" HorizontalAlignment="Left"/>
                                     </Grid>
-
+ 
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
                     </Grid>
                 </TabItem>
                 <TabItem Header="Output">
-                    <ListBox Margin="0" ItemsSource="{Binding TraceMessages}"  />
+                    <ListBox Margin="0" ItemsSource="{Binding TraceMessages}" HorizontalContentAlignment="Stretch">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="models:LoggingEntry">
+                                <Grid Margin="1" HorizontalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="25" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.InputBindings>
+                                        <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding RelativeSource={RelativeSource FindAncestor, 
+                                                                    AncestorType={x:Type Window}}, Path=DataContext.ShowTraceDetailsCommand}"
+                                                      CommandParameter="{Binding}"></MouseBinding>
+                                    </Grid.InputBindings>
+                                    <Button Content="..." Name="btt" Visibility="Collapsed" Width="20" Grid.Column="1" Command="{Binding RelativeSource={RelativeSource FindAncestor, 
+                                                                    AncestorType={x:Type Window}}, Path=DataContext.ShowTraceDetailsCommand}"
+                                                                    CommandParameter="{Binding}"/>
+                                    <AccessText Text="{Binding Text}" Height="20" Grid.Column="0"/>                                    
+                                </Grid>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBoxItem}},
+                                                Path=IsSelected}" Value="True">
+                                        <Setter TargetName="btt" Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                   </ListBox>
                 </TabItem>
             </TabControl>
             

@@ -31,29 +31,31 @@ namespace Designer.Services
 
                 app.Completed = (args =>
                 {
-                    writer?.WriteLine($"Workflow completed as {args.CompletionState}");
+                    writer?.WriteLine($"Workflowapplication action: completed as {args.CompletionState}");
                 });
 
 
                 app.Aborted = (args =>
                 {
+                    writer?.WriteLine($"Workflowapplication action: aborted {args.Reason.Message}");
                     resetevent.Set();
                 });
 
                 app.OnUnhandledException = (args =>
                 {
-                    writer?.WriteLine("Unhandled exception");
+                    writer?.WriteLine("Workflowapplication action: unhandled exception");
                     return UnhandledExceptionAction.Cancel;
                 });
 
                 app.Unloaded = (args =>
                 {
-                    writer?.WriteLine("Workflow unloaded");
+                    writer?.WriteLine("Workflowapplication action: unloaded");
                     resetevent.Set();
                 });
 
                 app.OnUnhandledException = (args =>
                 {
+                    writer?.WriteLine($"Workflowapplication action: unhandled exception {args.UnhandledException.Message}");
                     return UnhandledExceptionAction.Cancel;
                 });
 

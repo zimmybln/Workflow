@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using System.Xaml;
 using Designer.Components.Workflow;
+using Designer.Dialogs;
 using Designer.Properties;
 using Designer.Services;
 using Microsoft.Win32;
@@ -31,6 +32,7 @@ namespace Designer.Models
             CloseCommand = new MethodCommand(OnCloseCommand);
             SaveWorkflowCommand = new MethodCommand(OnSaveWorkflowCommand);
             LoadWorkflowCommand = new MethodCommand(OnLoadWorkflowCommand);
+            ShowTraceDetailsCommand = new MethodCommand(OnShowTraceDetailsCommand);
            
             ToolboxItems.AddRange("Default", typeof(If), typeof(Sequence), typeof(While), typeof(DoWhile), typeof(Assign), typeof(Switch<>), typeof(WriteLine),
                                             typeof(TerminateWorkflow), typeof(Delay), typeof(InvokeMethod));
@@ -86,6 +88,17 @@ namespace Designer.Models
 
             await workflowexecution.Execute(executable, options);
             
+        }
+
+        private void OnShowTraceDetailsCommand(ICommand command, object parameter)
+        {
+            var entry = parameter as LoggingEntry;
+
+            if (entry == null) return;
+
+            var dlg = new LoggingEntryProperties(entry);
+
+            dlg.ShowDialog();
         }
 
         private void OnSaveWorkflowCommand(ICommand command, object parameter)
@@ -164,14 +177,34 @@ namespace Designer.Models
         {
             if (!Dispatcher.CheckAccess())
             {
-                Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action) (() => {TraceMessages.Add(message);}));
+                Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() => { AddEntry(new LoggingEntry(message)); }));
             }
             else
             {
-                TraceMessages.Add(message);
+                AddEntry(new LoggingEntry(message));
             }
             
         }
+
+        void IWriterAdapter.WriteEntry(LoggingEntry entry)
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() => { AddEntry(entry); }));
+            }
+            else
+            {
+                AddEntry(entry);
+            }
+
+        }
+
+        private void AddEntry(LoggingEntry entry)
+        {
+            TraceMessages.Add(entry);
+        }
+
+        
 
         #region Properties
 
@@ -183,11 +216,13 @@ namespace Designer.Models
 
         public ICommand LoadWorkflowCommand { get; }
 
+        public ICommand ShowTraceDetailsCommand { get; }
+
         public ToolboxItemDescriptorCollection ToolboxItems { get; } = new ToolboxItemDescriptorCollection();
 
         public ObservableCollection<string> TemplateItems { get; } = new ObservableCollection<string>(); 
         
-        public ObservableCollection<string> TraceMessages { get; } = new ObservableCollection<string>(); 
+        public ObservableCollection<LoggingEntry> TraceMessages { get; } = new ObservableCollection<LoggingEntry>();
 
         public Activity CurrentWorkflow
         {

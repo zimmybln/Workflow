@@ -76,6 +76,9 @@
     <Compile Include="Components\WarningToColorConverter.cs" />
     <Compile Include="Components\Workflow\ActivityExtensions.cs" />
     <Compile Include="Components\Workflow\StateChangeTrackingParticipant.cs" />
+    <Compile Include="Dialogs\LoggingEntryProperties.xaml.cs">
+      <DependentUpon>LoggingEntryProperties.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Models\ITraceListenerAdapter.cs" />
     <Compile Include="Models\TextToUiWriter.cs" />
     <Compile Include="Services\IPersistenceService.cs" />
@@ -83,6 +86,10 @@
     <Compile Include="Services\NotificationService.cs" />
     <Compile Include="Services\WorkflowExecutionService.cs" />
     <Page Include="Controls\WorkflowEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialogs\LoggingEntryProperties.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -157,7 +164,9 @@
   <ItemGroup>
     <Resource Include="Resources\32x32\Run.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Types\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
