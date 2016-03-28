@@ -5,8 +5,11 @@ using System.Activities.Statements;
 using System.Activities.XamlIntegration;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -16,24 +19,48 @@ using Designer.Components.Workflow;
 using Designer.Dialogs;
 using Designer.Properties;
 using Designer.Services;
+using Microsoft.Practices.ServiceLocation;
 using Microsoft.Win32;
+using Prism.Modularity;
+using Prism.Mvvm;
 using XamlWriter = System.Windows.Markup.XamlWriter;
 
 namespace Designer.Models
 {
-    public class MainWindowModel : ModelBase, IWriterAdapter
+
+    [Export]
+    public class MainWindowModel : BindableBase, IWriterAdapter, IPartImportsSatisfiedNotification
     {
         private Activity _currentworkflow = null;
         private bool _isBackstageOpen;
+        private Dispatcher _dispatcher;
+        private LoadedAdapter _loadedadapter;
+        private Timer _timer;
 
-        public MainWindowModel()
+        [Import(AllowRecomposition = false)]
+        private IModuleCatalog moduleCatalog;
+
+        [Import(AllowRecomposition = false)]
+        private IModuleManager moduleManager;
+
+        [Import(AllowRecomposition = false)]
+        private NotificationService notificationService;
+
+        [Import(AllowRecomposition = true)]
+        private IWorkflowExecutionService executionService;
+
+        public MainWindowModel() 
         {
+            _dispatcher = Dispatcher.CurrentDispatcher;
+            
             ExecuteWorkflow = new MethodCommand(OnExecuteWorkflow);
             CloseCommand = new MethodCommand(OnCloseCommand);
             SaveWorkflowCommand = new MethodCommand(OnSaveWorkflowCommand);
             LoadWorkflowCommand = new MethodCommand(OnLoadWorkflowCommand);
             ShowTraceDetailsCommand = new MethodCommand(OnShowTraceDetailsCommand);
-           
+
+            _loadedadapter = new LoadedAdapter(OnLoaded);
+
             ToolboxItems.AddRange("Default", typeof(If), typeof(Sequence), typeof(While), typeof(DoWhile), typeof(Assign), typeof(Switch<>), typeof(WriteLine),
                                             typeof(TerminateWorkflow), typeof(Delay), typeof(InvokeMethod));
             ToolboxItems.AddRange("ErrorHandling", typeof(Throw), typeof(TryCatch), typeof(Rethrow));
@@ -42,19 +69,8 @@ namespace Designer.Models
             {
                 ToolboxItems.AddFromDirectory("Activities");
             }
-            
-            
+                      
             Settings.Default.PropertyChanged += OnSettingsPropertyChanged;
-
-            var notifications = ApplicationServices.GetService<NotificationService>();
-
-            if (notifications != null)
-            {
-                notifications.OnNotify += OnNotify;
-            }
-
-            PropertyChanged += (sender, args) => Debug.WriteLine(args.PropertyName);
-
         }
 
         private void OnSettingsPropertyChanged(object sender, PropertyChangedEventArgs args)
@@ -75,8 +91,6 @@ namespace Designer.Models
             Console.SetOut(new TextToUiWriter(this) { Prefix = "Console: " });
             
             // execute the workflow
-            var workflowexecution = ApplicationServices.GetService<IWorkflowExecutionService>();
-
             var options = new WorkflowExecutionOptions()
             {
                 TraceWriter = this
@@ -86,7 +100,9 @@ namespace Designer.Models
             
             var executable = CurrentWorkflow.Clone();
 
-            await workflowexecution.Execute(executable, options);
+            await executionService.Execute(executable, options);
+
+            notificationService.Notify(new ExecutionFinishedNotification("Execution finished"));
             
         }
 
@@ -159,13 +175,42 @@ namespace Designer.Models
 
         private void OnNotify(object sender, INotification notification)
         {
-            
+            if (notification is INotificationMessage)
+            {
+                // reset the timer to zero
+                _timer?.Change(0, 0);
+
+                StateMessage = ((INotificationMessage) notification).Message;
+
+                if (_timer == null)
+                {
+                    _timer = new Timer(OnTimerCallback);
+                }
+                _timer.Change(5000, 0);
+            }
+        }
+
+        private void OnTimerCallback(object state)
+        {
+            if (!_dispatcher.CheckAccess())
+            {
+                _dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() => { notificationService.Notify(new ResetMessageNotification()); }));
+            }
+            else
+            {
+                notificationService.Notify(new ResetMessageNotification());
+            }
         }
 
 
-        protected override void OnLoaded()
+        protected void OnLoaded()
         {
             CurrentWorkflow = CreateDefaultWorkflow();
+
+            if (notificationService != null)
+            {
+                Debug.WriteLine("Erfolgreich");
+            }
         }
 
         private Activity CreateDefaultWorkflow()
@@ -175,9 +220,9 @@ namespace Designer.Models
 
         void IWriterAdapter.WriteLine(string message)
         {
-            if (!Dispatcher.CheckAccess())
+            if (!_dispatcher.CheckAccess())
             {
-                Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() => { AddEntry(new LoggingEntry(message)); }));
+                _dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() => { AddEntry(new LoggingEntry(message)); }));
             }
             else
             {
@@ -188,9 +233,9 @@ namespace Designer.Models
 
         void IWriterAdapter.WriteEntry(LoggingEntry entry)
         {
-            if (!Dispatcher.CheckAccess())
+            if (!_dispatcher.CheckAccess())
             {
-                Dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() => { AddEntry(entry); }));
+                _dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() => { AddEntry(entry); }));
             }
             else
             {
@@ -204,9 +249,14 @@ namespace Designer.Models
             TraceMessages.Add(entry);
         }
 
-        
+
 
         #region Properties
+
+        public LoadedAdapter LoadedAdapter
+        {
+            get { return _loadedadapter; }
+        }
 
         public ICommand ExecuteWorkflow { get; }
 
@@ -227,27 +277,13 @@ namespace Designer.Models
         public Activity CurrentWorkflow
         {
             get { return _currentworkflow; }
-            set
-            {
-                if (!object.Equals(value, _currentworkflow))
-                {
-                    _currentworkflow = value;
-                    RaisePropertyChanged();
-                }
-            }
+            set { SetProperty(ref _currentworkflow, value);}
         }
 
         public bool IsBackstageOpen
         {
             get { return _isBackstageOpen;}
-            set
-            {
-                if (_isBackstageOpen != value)
-                {
-                    _isBackstageOpen = value;
-                    RaisePropertyChanged();
-                }
-            }
+            set { SetProperty(ref this._isBackstageOpen, value); }
         }
 
         private string _title;
@@ -255,17 +291,25 @@ namespace Designer.Models
         public string Title
         {
             get { return _title; }
-            set
-            {
-                if (String.CompareOrdinal(value, _title) != 0)
-                {
-                    _title = value;
-                    RaisePropertyChanged();
-                }
-            }
+            set { SetProperty(ref this._title, value);}
+        }
+
+        private string _stateMessage;
+
+        public string StateMessage
+        {
+            get { return _stateMessage;}
+            set { SetProperty(ref this._stateMessage, value); }    
         }
 
         #endregion
 
+        public void OnImportsSatisfied()
+        {
+            if (notificationService != null)
+            {
+                notificationService.OnNotify += OnNotify;
+            }
+        }
     }
 }

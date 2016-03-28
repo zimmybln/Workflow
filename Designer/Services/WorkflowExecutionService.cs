@@ -6,11 +6,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Designer.Models;
+using Prism.Modularity;
 
 namespace Designer.Services
 {
     [Export(typeof(IWorkflowExecutionService))]
-    public class WorkflowExecutionService : IWorkflowExecutionService
+    public class WorkflowExecutionService : IWorkflowExecutionService, IModule
     {
         public Task Execute(Activity activity, WorkflowExecutionOptions options)
         {
@@ -69,6 +70,11 @@ namespace Designer.Services
                 // wait for finish the execution
                 resetevent.WaitOne();
             });
+        }
+
+        public void Initialize()
+        {
+            
         }
     }   
 }

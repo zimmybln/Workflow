@@ -20,9 +20,6 @@
     <Window.InputBindings>
         <KeyBinding Key="F5" Command="{Binding ExecuteWorkflow}" />
     </Window.InputBindings>
-    <Window.DataContext>
-        <models:MainWindowModel />
-    </Window.DataContext>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200" />
@@ -184,7 +181,13 @@
         
         
 
-        <StatusBar Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="5" Height="28" />
+        <StatusBar Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="5" Height="28" >
+            <StatusBar.Items>
+                <StatusBarItem>
+                    <Label Content="{Binding StateMessage}" Width="Auto" Foreground="White" />
+                </StatusBarItem>
+            </StatusBar.Items>
+        </StatusBar>
 
     </Grid>
 </fluent:RibbonWindow>

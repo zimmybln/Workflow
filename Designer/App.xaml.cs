@@ -21,13 +21,8 @@ namespace Designer
 
             Settings.Default.Reload();
             
-            ApplicationServices.BeginRegister();
-            ApplicationServices.RegisterModule(this.GetType().Assembly);
-            ApplicationServices.EndRegister();
-
-            var mainWindow = new MainWindow();
-
-            mainWindow.Show();
+            Bootstrapper bootstrapper = new Bootstrapper();
+            bootstrapper.Run();
         }
 
         protected override void OnExit(ExitEventArgs e)

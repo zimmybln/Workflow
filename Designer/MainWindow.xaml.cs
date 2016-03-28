@@ -6,6 +6,8 @@ using System.Activities.Presentation.Model;
 using System.Activities.Statements;
 using System.Activities.XamlIntegration;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Primitives;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -21,6 +23,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Xaml;
+using Designer.Models;
 using Fluent;
 
 namespace Designer
@@ -28,6 +31,7 @@ namespace Designer
     /// <summary>
     /// Interaktionslogik für MainWindow.xaml
     /// </summary>
+    [Export]
     public partial class MainWindow : RibbonWindow
     {
         private Point _startpoint;
@@ -36,6 +40,12 @@ namespace Designer
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        [Import]
+        public MainWindowModel ViewModel
+        {
+            set { this.DataContext = value; }
         }
 
         private void LstTemplates_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
