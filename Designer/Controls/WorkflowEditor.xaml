@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Designer.Controls"
              mc:Ignorable="d" 
+             Loaded="OnLoaded"
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid Name="grdDesignerHost" AllowDrop="True" DragEnter="GrdDesignerHost_OnDragEnter">
 

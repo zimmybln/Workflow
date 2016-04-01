@@ -10,7 +10,19 @@ namespace SystemActivities
 
     public sealed class ConsoleActivity : NativeActivity<String>
     {
-        public InArgument<string> CommandLine { get; set; } 
+        public InArgument<string> CommandLine { get; set; }
+
+        protected override void CacheMetadata(NativeActivityMetadata metadata)
+        {
+            base.CacheMetadata(metadata);
+
+            metadata.AddValidationError("Das geht so aber nicht");
+//            metadata.AddVariable(new Variable<int>("testvariable"));
+
+
+            
+
+        }
 
         protected override void Execute(NativeActivityContext context)
         {

@@ -7,7 +7,7 @@ using System.Windows.Threading;
 
 namespace Designer.Components
 {
-    public class NotificationServiceBase<T> : ServiceBase, INotificationService<T>
+    public class NotificationServiceBase<T> : INotificationService<T>
          where T : INotification
     {
 
@@ -37,6 +37,7 @@ namespace Designer.Components
         {
             mv_lstListenersForNotification = new List<GenericWeakEventSubscription<T>>();
             SendNotificationsToUI = true;
+            Dispatcher = System.Windows.Application.Current.Dispatcher;
         }
 
         /// <summary>
@@ -75,5 +76,7 @@ namespace Designer.Components
         /// oder im Kontext des Aufrufers
         /// </summary>
         public bool SendNotificationsToUI { get; set; }
+
+        protected Dispatcher Dispatcher { get; }
     }
 }

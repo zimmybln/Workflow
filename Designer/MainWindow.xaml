@@ -12,8 +12,14 @@
         xmlns:toolbox="clr-namespace:System.Activities.Presentation.Toolbox;assembly=System.Activities.Presentation"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="{x:Static components:ApplicationServices.Title}" 
+        
         components:WindowBehavior.Loaded="{Binding LoadedAdapter}">
+    <Window.Title>
+        <MultiBinding StringFormat="{}{0} - {1}">
+            <Binding Path="Title" />
+            <Binding Path="FileModel.DocumentName"/>
+        </MultiBinding>
+    </Window.Title>
     <Window.Resources>
         <components:WarningToColorConverter ErrorFill="Red" WarningFill="Yellow" x:Key="WarningToColorConverter" />
     </Window.Resources>
@@ -41,23 +47,22 @@
                     <fluent:BackstageTabControl>
                         <fluent:BackstageTabItem Header="New">
                             <Grid>
-                                
+                                <Button Content="Just new" Width="80" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Command="{Binding FileModel.NewCommand}"/>
                             </Grid>
-                            
                          </fluent:BackstageTabItem>
-                         <fluent:BackstageTabItem Header="Load">
+                         <fluent:BackstageTabItem Header="Open">
                             <Grid>
-                                <Button Content="Just load" Width="80" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Command="{Binding LoadWorkflowCommand}"/>
+                                <Button Content="Just open" Width="80" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Command="{Binding FileModel.OpenCommand}"/>
                             </Grid>
                         </fluent:BackstageTabItem>
                         <fluent:BackstageTabItem Header="Save">
                             <Grid>
-                                <Button Content="Just save" Width="80" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Command="{Binding SaveWorkflowCommand}"/>
+                                <Button Content="Just save" Width="80" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Command="{Binding FileModel.SaveCommand}"/>
                             </Grid>
                         </fluent:BackstageTabItem>
                         <fluent:BackstageTabItem Header="Save As">
                             <Grid>
-                                
+                                <Button Content="Just save as" Width="80" Height="28" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Command="{Binding FileModel.SaveAsCommand}"/>
                             </Grid>
                         </fluent:BackstageTabItem>
                         <fluent:BackstageTabItem Header="Print"/>
@@ -164,7 +169,7 @@
                 </TabItem>
             </TabControl>
             
-            <controls:WorkflowEditor SelectedWorkflow="{Binding CurrentWorkflow}" x:Name="WorkflowEditor"  />
+            <controls:WorkflowEditor SelectedWorkflow="{Binding CurrentWorkflow}" x:Name="WorkflowEditor" Changed="{Binding Changed, Mode=TwoWay}" />
         </DockPanel>
         
         
@@ -179,12 +184,10 @@
             </TabItem>
         </TabControl>
         
-        
-
         <StatusBar Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="5" Height="28" >
             <StatusBar.Items>
                 <StatusBarItem>
-                    <Label Content="{Binding StateMessage}" Width="Auto" Foreground="White" />
+                    <Label Content="{Binding StatusBar.Text}" Width="Auto" Foreground="White" />
                 </StatusBarItem>
             </StatusBar.Items>
         </StatusBar>

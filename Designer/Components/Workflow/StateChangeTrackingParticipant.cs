@@ -41,7 +41,7 @@ namespace Designer.Components.Workflow
         private readonly IWriterAdapter _writerAdapter;
         private readonly StateChangeRecords _stateChangeRecords;
 
-        private DateTime _startTime;
+        
 
         public StateChangeTrackingParticipant(IWriterAdapter writer, StateChangeRecords records)
         {
@@ -49,25 +49,15 @@ namespace Designer.Components.Workflow
             _stateChangeRecords = records;
         }
 
+        public ExecutionTimeProvider ExecutionTime { get; set; }
+
         protected override void Track(TrackingRecord record, TimeSpan timeout)
         {
-            TimeSpan timeSpan;
             LoggingEntry entry = null;
 
-            if (record.RecordNumber == 0)
-            {
-                _startTime = record.EventTime.ToLocalTime();
-                timeSpan = new TimeSpan(0,0,0,0,0);
-            }
-            else
-            {
-                timeSpan = record.EventTime.ToLocalTime() - _startTime;
-            }
-
-            var timeSpanValue = timeSpan.ToString("mm\\:ss\\.fff");
+            var timeSpanValue = ExecutionTime?.GetTimeInfo(record);
             var commoninfo = $"{record.RecordNumber:00000} {timeSpanValue}";
-
-
+            
             if (IsSet(StateChangeRecords.ActivityState) && record is ActivityStateRecord)
             {
                 var staterecord = (ActivityStateRecord) record;
@@ -90,7 +80,7 @@ namespace Designer.Components.Workflow
             {
                 var instancerecord = (WorkflowInstanceRecord) record;
 
-                _writerAdapter.WriteLine($"{commoninfo} State changed: {instancerecord.State}");
+                _writerAdapter.WriteLine($"{commoninfo} State of workflow changed: {instancerecord.State}");
             }
             else if (IsSet(StateChangeRecords.CancelRequested) && record is CancelRequestedRecord)
             {

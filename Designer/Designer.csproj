@@ -106,12 +106,18 @@
     </ApplicationDefinition>
     <Compile Include="Components\Bootstrapper.cs" />
     <Compile Include="Components\MethodCommand.cs" />
+    <Compile Include="Components\Models\StatusBarModel.cs" />
+    <Compile Include="Components\Models\StorageModel.cs" />
     <Compile Include="Components\WarningToColorConverter.cs" />
     <Compile Include="Components\Workflow\ActivityExtensions.cs" />
+    <Compile Include="Components\Workflow\ExecutionTimeProvider.cs" />
+    <Compile Include="Components\Workflow\RelativeExecutionTimeProvider.cs" />
     <Compile Include="Components\Workflow\StateChangeTrackingParticipant.cs" />
     <Compile Include="Dialogs\LoggingEntryProperties.xaml.cs">
       <DependentUpon>LoggingEntryProperties.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Models\ActivityFormatProvider.cs" />
+    <Compile Include="Models\FileBasedStorageUi.cs" />
     <Compile Include="Models\ITraceListenerAdapter.cs" />
     <Compile Include="Models\TextToUiWriter.cs" />
     <Compile Include="Services\IPersistenceService.cs" />
@@ -137,19 +143,15 @@
     <Compile Include="Components\ActionAdapter.cs" />
     <Compile Include="Components\ApplicationServices.cs" />
     <Compile Include="Components\ClosingAdapter.cs" />
-    <Compile Include="Components\ComponentInfoAttribute.cs" />
     <Compile Include="Components\ExecuteActionBase.cs" />
     <Compile Include="Components\GenericWeakEventSubscription.cs" />
     <Compile Include="Components\GetComponentOptions.cs" />
     <Compile Include="Components\INotification.cs" />
     <Compile Include="Components\INotificationService.cs" />
-    <Compile Include="Components\InvalidMethodSequence.cs" />
     <Compile Include="Components\IService.cs" />
     <Compile Include="Components\LoadedAdapter.cs" />
     <Compile Include="Components\NotificationBase.cs" />
     <Compile Include="Components\NotificationServiceBase.cs" />
-    <Compile Include="Components\PropertyContainer.cs" />
-    <Compile Include="Components\ServiceBase.cs" />
     <Compile Include="Components\ToolboxAdditions.cs" />
     <Compile Include="Components\UnloadedAdapter.cs" />
     <Compile Include="Components\WindowBehavior.cs" />

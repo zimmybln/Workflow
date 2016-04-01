@@ -22,6 +22,7 @@ using System.Activities.Presentation.View;
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using Designer.Controls.Services;
+using Microsoft.Practices.ObjectBuilder2;
 
 namespace Designer.Controls
 {
@@ -85,7 +86,7 @@ namespace Designer.Controls
 
             // create and configure the designer control
             _coreDesigner = new WorkflowDesigner();
-
+            
             // apply the services / configurations
             _coreDesigner.Context.Services.Publish(typeof(IValidationErrorService), new ValidationErrorService(this.Messages));
             _coreDesigner.Context.Items.Subscribe(typeof(Selection), OnSelectionChanged);
@@ -97,6 +98,7 @@ namespace Designer.Controls
             OutlineView = _coreDesigner.OutlineView;
             
             _coreDesigner.ModelChanged += WorkflowDesignerOnModelChanged;
+            _coreDesigner.TextChanged += WorkflowDesignerOnTextChanged;
 
             // Mögliche Dienste:
             // - DesignerConfigurationService
@@ -121,7 +123,16 @@ namespace Designer.Controls
                 configurationService.TargetFrameworkName = new FrameworkName(".NETFramework,Version=v4.5");
             }
 
+            _coreDesigner.View.PreviewDrop += delegate(object sender, DragEventArgs args)
+            {
+                Debug.WriteLine($"Drop {args.Data?.GetFormats().JoinStrings(",")} ");
+                //WorkflowItemTypeNameFormat
+
+
+            };
         }
+
+
 
         private void OnSelectionChanged(ContextItem item)
         {
@@ -140,6 +151,11 @@ namespace Designer.Controls
         }
 
         private void WorkflowDesignerOnModelChanged(object Sender, EventArgs Args)
+        {
+            Changed = true;
+        }
+
+        private void WorkflowDesignerOnTextChanged(object sender, TextChangedEventArgs textChangedEventArgs)
         {
             Changed = true;
         }
@@ -200,6 +216,17 @@ namespace Designer.Controls
         {
             var data = e.Data.GetData(DragDropHelper.WorkflowItemTypeNameFormat);
 
+
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            //var designerview = _coreDesigner.Context.Services.GetService<DesignerView>();
+
+            //if (designerview != null)
+            //{
+            //    designerview.WorkflowShellBarItemVisibility = ShellBarItemVisibility.All;
+            //}
 
         }
     }

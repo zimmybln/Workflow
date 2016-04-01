@@ -15,12 +15,14 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Threading;
 using System.Xaml;
+using Designer.Components.Models;
 using Designer.Components.Workflow;
 using Designer.Dialogs;
 using Designer.Properties;
 using Designer.Services;
 using Microsoft.Practices.ServiceLocation;
 using Microsoft.Win32;
+using Prism.Commands;
 using Prism.Modularity;
 using Prism.Mvvm;
 using XamlWriter = System.Windows.Markup.XamlWriter;
@@ -29,13 +31,14 @@ namespace Designer.Models
 {
 
     [Export]
-    public class MainWindowModel : BindableBase, IWriterAdapter, IPartImportsSatisfiedNotification
+    public class MainWindowModel : BindableBase, IWriterAdapter, IPartImportsSatisfiedNotification, IDocumentProvider<Activity>
     {
         private Activity _currentworkflow = null;
         private bool _isBackstageOpen;
-        private Dispatcher _dispatcher;
-        private LoadedAdapter _loadedadapter;
-        private Timer _timer;
+        private bool _changed = false;
+        private readonly Dispatcher _dispatcher;
+        private readonly LoadedAdapter _loadedadapter;
+
 
         [Import(AllowRecomposition = false)]
         private IModuleCatalog moduleCatalog;
@@ -43,22 +46,29 @@ namespace Designer.Models
         [Import(AllowRecomposition = false)]
         private IModuleManager moduleManager;
 
-        [Import(AllowRecomposition = false)]
-        private NotificationService notificationService;
+        private readonly NotificationService _notificationService;
 
         [Import(AllowRecomposition = true)]
         private IWorkflowExecutionService executionService;
 
-        public MainWindowModel() 
+        [ImportingConstructor]
+        public MainWindowModel(NotificationService notificationService)
         {
+            _notificationService = notificationService;
+            
             _dispatcher = Dispatcher.CurrentDispatcher;
             
-            ExecuteWorkflow = new MethodCommand(OnExecuteWorkflow);
-            CloseCommand = new MethodCommand(OnCloseCommand);
-            SaveWorkflowCommand = new MethodCommand(OnSaveWorkflowCommand);
-            LoadWorkflowCommand = new MethodCommand(OnLoadWorkflowCommand);
-            ShowTraceDetailsCommand = new MethodCommand(OnShowTraceDetailsCommand);
+            ExecuteWorkflow = new DelegateCommand(OnExecuteWorkflow);
+            CloseCommand = new DelegateCommand(OnCloseCommand);
+            ShowTraceDetailsCommand = new DelegateCommand<LoggingEntry>(OnShowTraceDetailsCommand);
 
+            // Initialize model components
+            StatusBar = new StatusBarModel(notificationService);
+
+            FileModel = new StorageModel<Activity>(new FileBasedStorageUi() {DefaultExtension = "wdef"},
+                                                   new ActivityFormatProvider(),
+                                                   this);
+            
             _loadedadapter = new LoadedAdapter(OnLoaded);
 
             ToolboxItems.AddRange("Default", typeof(If), typeof(Sequence), typeof(While), typeof(DoWhile), typeof(Assign), typeof(Switch<>), typeof(WriteLine),
@@ -71,18 +81,55 @@ namespace Designer.Models
             }
                       
             Settings.Default.PropertyChanged += OnSettingsPropertyChanged;
+
+            if (_notificationService != null)
+            {
+                _notificationService.OnNotify += OnNotify;
+            }
+
+            Title = ApplicationServices.Title;
         }
+
+        #region IDocumentProvider
+
+        Activity IDocumentProvider<Activity>.GetDefaultDocument()
+        {
+            return new Flowchart() { DisplayName = "Default" };
+        }
+
+        void IDocumentProvider<Activity>.SetDocument(Activity document)
+        {
+            CurrentWorkflow = document;
+        }
+
+        public Activity GetDocument()
+        {
+            return CurrentWorkflow;
+        }
+
+        public bool GetDocumentChanged()
+        {
+            return Changed;
+        }
+
+        public void ActionPerformed()
+        {
+            Changed = false;
+            IsBackstageOpen = false;
+        }
+
+        #endregion
 
         private void OnSettingsPropertyChanged(object sender, PropertyChangedEventArgs args)
         {
             if (args.PropertyName.Equals(nameof(Settings.Default.LoadActivities)))
             {
-                
+                 
             }
             
         }
 
-        private async void OnExecuteWorkflow(ICommand command, object o)
+        private async void OnExecuteWorkflow()
         { 
             // reset all the UI Output
             TraceMessages.Clear();
@@ -96,17 +143,17 @@ namespace Designer.Models
                 TraceWriter = this
             };
 
-            options.TrackingParticipants.Add(new StateChangeTrackingParticipant(this, StateChangeRecords.All));
+            options.TrackingParticipants.Add(new StateChangeTrackingParticipant(this, StateChangeRecords.All) {ExecutionTime = new RelativeExecutionTimeProvider()});
             
             var executable = CurrentWorkflow.Clone();
 
             await executionService.Execute(executable, options);
 
-            notificationService.Notify(new ExecutionFinishedNotification("Execution finished"));
+            _notificationService.Notify(new ExecutionFinishedNotification("Execution finished"));
             
         }
 
-        private void OnShowTraceDetailsCommand(ICommand command, object parameter)
+        private void OnShowTraceDetailsCommand(LoggingEntry parameter)
         {
             var entry = parameter as LoggingEntry;
 
@@ -117,106 +164,23 @@ namespace Designer.Models
             dlg.ShowDialog();
         }
 
-        private void OnSaveWorkflowCommand(ICommand command, object parameter)
-        {
-            // select a filename
-            SaveFileDialog dlg = new SaveFileDialog();
-            dlg.Filter = "Workflow Definition File (*.wdef)|*.wdef|All files|*.*";
-            dlg.FilterIndex = 0;
-            dlg.OverwritePrompt = true;
-            dlg.AddExtension = true;
-            dlg.CheckPathExists = true;
-            dlg.DefaultExt = "wdef";
-
-            if (dlg.ShowDialog() != true)
-                return;
-
-            // save the current workflow
-            if (File.Exists(dlg.FileName))
-                File.Delete(dlg.FileName);
-
-            StreamWriter sw = File.CreateText(dlg.FileName);
-            var writer = ActivityXamlServices.CreateBuilderWriter(new XamlXmlWriter(sw, new XamlSchemaContext()));
-            XamlServices.Save(writer, CurrentWorkflow);
-            sw.Close();
-
-            IsBackstageOpen = false;
-
-
-        }
-
-        private void OnLoadWorkflowCommand(ICommand command, object parameter)
-        {
-            // select a filename
-            OpenFileDialog dlg = new OpenFileDialog();
-            dlg.Filter = "Workflow Definition File (*.wdef)|*.wdef|All files|*.*";
-            dlg.FilterIndex = 0;
-            dlg.AddExtension = true;
-            dlg.CheckPathExists = true;
-            dlg.CheckFileExists = true;
-            dlg.DefaultExt = "wdef";
-
-            if (dlg.ShowDialog() != true)
-                return;
-
-            StreamReader sr = File.OpenText(dlg.FileName);
-            var reader = ActivityXamlServices.CreateBuilderReader(new XamlXmlReader(sr, new XamlSchemaContext()));
-            var workflow = XamlServices.Load(reader) as Activity;
-            CurrentWorkflow = workflow;
-
-            IsBackstageOpen = false;
-
-        }
-
-        private void OnCloseCommand(ICommand command, object o)
+        private void OnCloseCommand()
         {
             Application.Current.Shutdown();
         }
 
         private void OnNotify(object sender, INotification notification)
         {
-            if (notification is INotificationMessage)
-            {
-                // reset the timer to zero
-                _timer?.Change(0, 0);
 
-                StateMessage = ((INotificationMessage) notification).Message;
-
-                if (_timer == null)
-                {
-                    _timer = new Timer(OnTimerCallback);
-                }
-                _timer.Change(5000, 0);
-            }
         }
-
-        private void OnTimerCallback(object state)
-        {
-            if (!_dispatcher.CheckAccess())
-            {
-                _dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() => { notificationService.Notify(new ResetMessageNotification()); }));
-            }
-            else
-            {
-                notificationService.Notify(new ResetMessageNotification());
-            }
-        }
-
 
         protected void OnLoaded()
         {
-            CurrentWorkflow = CreateDefaultWorkflow();
-
-            if (notificationService != null)
-            {
-                Debug.WriteLine("Erfolgreich");
-            }
+            // execute new document when loaded
+            FileModel.NewCommand.Execute(null);
         }
 
-        private Activity CreateDefaultWorkflow()
-        {
-            return new Flowchart() { DisplayName = "Default" };
-        }
+        #region IWriterAdapter & Tracing
 
         void IWriterAdapter.WriteLine(string message)
         {
@@ -249,8 +213,8 @@ namespace Designer.Models
             TraceMessages.Add(entry);
         }
 
-
-
+        #endregion
+        
         #region Properties
 
         public LoadedAdapter LoadedAdapter
@@ -261,10 +225,6 @@ namespace Designer.Models
         public ICommand ExecuteWorkflow { get; }
 
         public ICommand CloseCommand { get; }
-
-        public ICommand SaveWorkflowCommand { get; }
-
-        public ICommand LoadWorkflowCommand { get; }
 
         public ICommand ShowTraceDetailsCommand { get; }
 
@@ -286,6 +246,12 @@ namespace Designer.Models
             set { SetProperty(ref this._isBackstageOpen, value); }
         }
 
+        public bool Changed
+        {
+            get { return _changed; }
+            set { SetProperty(ref this._changed, value); }
+        }
+
         private string _title;
 
         public string Title
@@ -294,22 +260,18 @@ namespace Designer.Models
             set { SetProperty(ref this._title, value);}
         }
 
-        private string _stateMessage;
+        public StatusBarModel StatusBar { get; }
 
-        public string StateMessage
-        {
-            get { return _stateMessage;}
-            set { SetProperty(ref this._stateMessage, value); }    
-        }
+        public StorageModel<Activity> FileModel { get; } 
 
         #endregion
 
         public void OnImportsSatisfied()
         {
-            if (notificationService != null)
-            {
-                notificationService.OnNotify += OnNotify;
-            }
+
         }
+
+
+
     }
 }
