@@ -116,7 +116,7 @@
     <Compile Include="Dialogs\LoggingEntryProperties.xaml.cs">
       <DependentUpon>LoggingEntryProperties.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Models\ActivityFormatProvider.cs" />
+    <Compile Include="Models\ActivityFileModel.cs" />
     <Compile Include="Models\FileBasedStorageUi.cs" />
     <Compile Include="Models\ITraceListenerAdapter.cs" />
     <Compile Include="Models\TextToUiWriter.cs" />

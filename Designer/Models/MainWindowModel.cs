@@ -39,17 +39,10 @@ namespace Designer.Models
         private readonly Dispatcher _dispatcher;
         private readonly LoadedAdapter _loadedadapter;
 
-
-        [Import(AllowRecomposition = false)]
-        private IModuleCatalog moduleCatalog;
-
-        [Import(AllowRecomposition = false)]
-        private IModuleManager moduleManager;
-
         private readonly NotificationService _notificationService;
 
         [Import(AllowRecomposition = true)]
-        private IWorkflowExecutionService executionService;
+        private IWorkflowExecutionService executionService = null;
 
         [ImportingConstructor]
         public MainWindowModel(NotificationService notificationService)
@@ -65,8 +58,7 @@ namespace Designer.Models
             // Initialize model components
             StatusBar = new StatusBarModel(notificationService);
 
-            FileModel = new StorageModel<Activity>(new FileBasedStorageUi() {DefaultExtension = "wdef"},
-                                                   new ActivityFormatProvider(),
+            FileModel = new ActivityFileModel(new FileBasedStorageUi() {DefaultExtension = "wdef"},
                                                    this);
             
             _loadedadapter = new LoadedAdapter(OnLoaded);
