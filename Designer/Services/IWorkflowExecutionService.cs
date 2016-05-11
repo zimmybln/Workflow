@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Designer.Components;
+using Designer.Contracts;
 using Designer.Models;
 
 namespace Designer.Services
@@ -16,7 +17,9 @@ namespace Designer.Services
     {
         public IWriterAdapter TraceWriter { get; set; } = null;
         
-        public List<TrackingParticipant> TrackingParticipants { get; } = new List<TrackingParticipant>(); 
+        public List<TrackingParticipant> TrackingParticipants { get; } = new List<TrackingParticipant>();
+        
+        public IDesignerOptionsExtension DesignerOptions { get; set; } 
     }
 
 

@@ -37,8 +37,10 @@ namespace Designer.Components
         internal ToolboxControl Control { get; set; } = null;
         internal List<string> Directories { get; set; } = new List<string>(); 
 
-        public int AddFromDirectory(string directoryName)
+        public IEnumerable<Type> AddFromDirectory(string directoryName)
         {
+           List<Type> activityTypes = new List<Type>();
+            
             // verify if the directory is rooted
             if (!Path.IsPathRooted(directoryName))
             {
@@ -46,13 +48,18 @@ namespace Designer.Components
             }
 
             if (!Directory.Exists(directoryName))
-                return 0;
+                return activityTypes;
             
             foreach (string file in Directory.GetFiles(directoryName, "*.dll"))
             {
                 Assembly assembly = Assembly.LoadFile(Path.Combine(directoryName, file));
 
-                AddFromAssembly(assembly);
+                var types = AddFromAssembly(assembly);
+
+                if (types != null && types.Any())
+                {
+                    activityTypes.AddRange(types);
+                }
 
                 if (!Directories.Contains(directoryName))
                 {
@@ -60,7 +67,7 @@ namespace Designer.Components
                 }
             }
 
-            return 0;
+            return activityTypes;
         }
 
         
@@ -72,8 +79,9 @@ namespace Designer.Components
         /// <summary>
         /// Adds all activities from the given assembly
         /// </summary>
-        public int AddFromAssembly(Assembly lib)
+        public IEnumerable<Type> AddFromAssembly(Assembly lib)
         {
+            List<Type> activityType = new List<Type>();
             Type typeofactivity = typeof (Activity);
 
             // get the filename
@@ -87,15 +95,17 @@ namespace Designer.Components
                     try
                     {
                         this.Add(new ToolboxItemDescriptor(categoryname, type));
+                        activityType.Add(type);
                     }
                     catch (Exception)
                     {
                         //throw;
                     }
+                    
                 }
             }
-            
-            return 0;
+
+            return activityType;
         }
 
         public void AddRange(string categoryName, params Type[] items)

@@ -11,6 +11,7 @@
         xmlns:properties="clr-namespace:Designer.Properties"
         xmlns:toolbox="clr-namespace:System.Activities.Presentation.Toolbox;assembly=System.Activities.Presentation"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:types="clr-namespace:Designer.Types"
         mc:Ignorable="d"
         
         components:WindowBehavior.Loaded="{Binding LoadedAdapter}">
@@ -68,15 +69,35 @@
                         <fluent:BackstageTabItem Header="Print"/>
                         <fluent:BackstageTabItem Header="Options">
                             <StackPanel Orientation="Vertical">
-                                <Grid Margin="50,50,0,0">
+                                <Grid Margin="50,50,50,50">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="80*" />
+                                        <ColumnDefinition Width="20*" />
+                                    </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="25" />
                                         <RowDefinition Height="40" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="300" />
                                     </Grid.RowDefinitions>
                                     
-                                    <AccessText Text="Behavior of activies" FontWeight="Bold" Grid.Row="0" />
-                                    <CheckBox Content="Load activities" IsChecked="{Binding LoadActivities, Source={x:Static properties:Settings.Default}}" Grid.Row="1" VerticalAlignment="Center" Margin="5" />
+                                    <AccessText Text="Behavior of activities" FontWeight="Bold" Grid.Row="0" Grid.Column="0" />
+                                    <CheckBox Content="Load activities" IsChecked="{Binding LoadActivities, Source={x:Static properties:Settings.Default}}" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="5" />
                                     
+                                    <AccessText Text="Options for activities" FontWeight="Bold" Grid.Row="2" Grid.Column="0" Margin="0,30,0,1" Height="50" VerticalAlignment="Bottom" />
+                                    <DockPanel LastChildFill="True" Grid.Row="3" Grid.Column="0">
+                                        <TreeView  ItemsSource="{Binding ActivityOptionGroups}" x:Name="trvAcitivityOption" Width="200">
+                                            <TreeView.ItemTemplate>
+                                                <HierarchicalDataTemplate DataType="types:ActivityOptionGroup" ItemsSource="{Binding Items}">
+                                                    <TextBlock Text="{Binding Name}" />
+                                                </HierarchicalDataTemplate>
+                                            </TreeView.ItemTemplate>
+                                        </TreeView>
+                                        <ContentControl Content="{Binding ElementName=trvAcitivityOption, Path=SelectedItem.Data}" 
+                                                                                     ContentTemplate="{Binding ElementName=trvAcitivityOption, Path=SelectedItem.Content}">
+                                        
+                                        </ContentControl>
+                                    </DockPanel>
                                 </Grid>
                             </StackPanel>
                         </fluent:BackstageTabItem>
@@ -194,3 +215,4 @@
 
     </Grid>
 </fluent:RibbonWindow>
+

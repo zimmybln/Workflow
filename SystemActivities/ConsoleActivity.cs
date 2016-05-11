@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Activities;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 
 namespace SystemActivities
 {
 
+    [ToolboxBitmap(typeof(ConsoleActivity), "ConsoleActivity.png")]
+    [Description("Runs a command line")]
     public sealed class ConsoleActivity : NativeActivity<String>
     {
         public InArgument<string> CommandLine { get; set; }
@@ -16,7 +20,7 @@ namespace SystemActivities
         {
             base.CacheMetadata(metadata);
 
-            metadata.AddValidationError("Das geht so aber nicht");
+            //metadata.AddValidationError("Das geht so aber nicht");
 //            metadata.AddVariable(new Variable<int>("testvariable"));
 
 

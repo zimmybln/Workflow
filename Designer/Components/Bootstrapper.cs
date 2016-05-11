@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using Designer.Dialogs;
 using Designer.Services;
 using Prism.Mef;
 using Prism.Modularity;
@@ -39,6 +40,9 @@ namespace Designer.Components
         protected override void InitializeShell()
         {
             base.InitializeShell();
+
+            //Window1 wnd = new Window1();
+            //wnd.ShowDialog();
 
             App.Current.MainWindow = (MainWindow)this.Shell;
             App.Current.MainWindow.Show();

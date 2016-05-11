@@ -28,6 +28,11 @@ namespace Designer.Services
 
                     // add all tracking participants
                     options.TrackingParticipants.ForEach(tp => app.Extensions.Add(tp));
+
+                    if (options.DesignerOptions != null)
+                    {
+                        app.Extensions.Add(options.DesignerOptions);
+                    }
                 }
 
                 app.Completed = (args =>

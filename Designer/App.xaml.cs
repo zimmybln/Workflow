@@ -28,7 +28,7 @@ namespace Designer
         protected override void OnExit(ExitEventArgs e)
         {
             base.OnExit(e);
-            
+
             Settings.Default.Save();
         }
     }

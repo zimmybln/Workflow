@@ -59,6 +59,10 @@
       <HintPath>..\packages\Unity.4.0.1\lib\net45\Microsoft.Practices.Unity.RegistrationByConvention.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="nunit.framework, Version=3.2.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.2.0\lib\net45\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Prism, Version=6.1.0.0, Culture=neutral, PublicKeyToken=91a96d2a154366d8, processorArchitecture=MSIL">
       <HintPath>..\packages\Prism.Core.6.1.0\lib\net45\Prism.dll</HintPath>
       <Private>True</Private>
@@ -81,6 +85,7 @@
     <Reference Include="System.Activities.DurableInstancing" />
     <Reference Include="System.Activities.Presentation" />
     <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Fluent.Ribbon.4.0.0-dev0286\lib\net45\System.Windows.Interactivity.dll</HintPath>
@@ -104,12 +109,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Components\Application\CustomSettingsProvider.cs" />
     <Compile Include="Components\Bootstrapper.cs" />
     <Compile Include="Components\MethodCommand.cs" />
     <Compile Include="Components\Models\StatusBarModel.cs" />
     <Compile Include="Components\Models\StorageModel.cs" />
     <Compile Include="Components\WarningToColorConverter.cs" />
     <Compile Include="Components\Workflow\ActivityExtensions.cs" />
+    <Compile Include="Components\Workflow\DesignerOptions.cs" />
     <Compile Include="Components\Workflow\ExecutionTimeProvider.cs" />
     <Compile Include="Components\Workflow\RelativeExecutionTimeProvider.cs" />
     <Compile Include="Components\Workflow\StateChangeTrackingParticipant.cs" />
@@ -124,6 +131,8 @@
     <Compile Include="Services\IWorkflowExecutionService.cs" />
     <Compile Include="Services\NotificationService.cs" />
     <Compile Include="Services\WorkflowExecutionService.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="Types\ActivityOptions.cs" />
     <Page Include="Controls\WorkflowEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -187,7 +196,7 @@
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
+      <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
@@ -198,8 +207,12 @@
   <ItemGroup>
     <Resource Include="Resources\32x32\Run.png" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="Types\" />
+    <ProjectReference Include="..\Designer.Contracts\Designer.Contracts.csproj">
+      <Project>{09177cf6-228b-4ac8-87e3-b61d7fb6eab6}</Project>
+      <Name>Designer.Contracts</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

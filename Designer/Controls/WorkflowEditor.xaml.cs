@@ -162,19 +162,13 @@ namespace Designer.Controls
 
         #region Eigenschaften
 
-        public ObservableCollection<EditorMessage> Messages { get; private set; }
-
-        public Activity SelectedWorkflow
-        {
-            get { return GetValue(SelectedWorkflowProperty) as Activity; }
-            set { SetValue(SelectedWorkflowProperty, value); }
-        }
-
         public UIElement PropertyView
         {
             get { return GetValue(PropertyViewProperty) as UIElement; }
             set { SetValue(PropertyViewProperty, value); }
         }
+
+        public ObservableCollection<EditorMessage> Messages { get; private set; }
 
         public UIElement OutlineView
         {
@@ -186,6 +180,12 @@ namespace Designer.Controls
         {
             get { return (bool)GetValue(ChangedProperty); }
             set { SetValue(ChangedProperty, value); }
+        }
+
+        public Activity SelectedWorkflow
+        {
+            get { return GetValue(SelectedWorkflowProperty) as Activity; }
+            set { SetValue(SelectedWorkflowProperty, value); }
         }
 
         #endregion
@@ -221,12 +221,12 @@ namespace Designer.Controls
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            //var designerview = _coreDesigner.Context.Services.GetService<DesignerView>();
+            var designerview = _coreDesigner.Context.Services.GetService<DesignerView>();
 
-            //if (designerview != null)
-            //{
-            //    designerview.WorkflowShellBarItemVisibility = ShellBarItemVisibility.All;
-            //}
+            if (designerview != null)
+            {
+                designerview.WorkflowShellBarItemVisibility = ShellBarItemVisibility.All;
+            }
 
         }
     }

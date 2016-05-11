@@ -2,34 +2,36 @@
 using System;
 using System.Activities;
 using System.Activities.Statements;
-using System.Activities.XamlIntegration;
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Windows;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Threading;
-using System.Xaml;
+using System.Xml;
+using System.Xml.Serialization;
 using Designer.Components.Models;
 using Designer.Components.Workflow;
+using Designer.Contracts;
+using Designer.Contracts.Attributes;
 using Designer.Dialogs;
 using Designer.Properties;
 using Designer.Services;
-using Microsoft.Practices.ServiceLocation;
-using Microsoft.Win32;
+using Designer.Types;
 using Prism.Commands;
-using Prism.Modularity;
 using Prism.Mvvm;
-using XamlWriter = System.Windows.Markup.XamlWriter;
 
 namespace Designer.Models
 {
 
+    /// <summary>
+    /// This model represents the ShellWindow
+    /// </summary>
     [Export]
     public class MainWindowModel : BindableBase, IWriterAdapter, IPartImportsSatisfiedNotification, IDocumentProvider<Activity>
     {
@@ -69,9 +71,91 @@ namespace Designer.Models
 
             if (Settings.Default.LoadActivities)
             {
-                ToolboxItems.AddFromDirectory("Activities");
+                var types = ToolboxItems.AddFromDirectory("Activities");
+
+                // finding Ui Options factories
+                foreach (var t in types)
+                {
+                    // check if there is a DesignerActivityOptionsAttribute
+                    var designeroptions =
+                        t.GetCustomAttributes(typeof(DesignerActivityOptionsAttribute), true).FirstOrDefault() as DesignerActivityOptionsAttribute;
+                    
+                    if (designeroptions == null)
+                        break;
+
+                                        
+                    var options = new ActivityOption() {Name = t.Name};
+                    options.DataTypeName = designeroptions.DesignerOptionsDataContextType.Name;
+
+                    // ui factory
+                    var uifactory = Activator.CreateInstance(designeroptions.DesignerOptionsUiFactoryType) as IDesignerOptionsUiFactory;
+
+                    if (uifactory != null)
+                    {
+                        options.Content = uifactory.GetOptionsUi();
+                    }
+
+                    //
+                    SettingsProperty property = Settings.Default.Properties[options.DataTypeName];
+
+                    object datacontext = null;
+
+                    if (property == null)
+                    {
+                        datacontext = Activator.CreateInstance(designeroptions.DesignerOptionsDataContextType);
+
+                        property = new SettingsProperty(options.DataTypeName);
+                        property.Name = options.DataTypeName;
+                        property.PropertyType = typeof(string);
+                        property.IsReadOnly = false;
+                        property.Attributes.Add(typeof(UserScopedSettingAttribute), new UserScopedSettingAttribute());
+                        property.Provider = Settings.Default.Providers["Designer.exe"];
+                        property.SerializeAs = SettingsSerializeAs.Xml;
+                        property.DefaultValue = null;
+
+                        Settings.Default.Properties.Add(property);
+                        // to avoid the reload of the settings every single iteration we have to
+                        // move the adding of properties
+                        Settings.Default.Reload();
+                    }
+
+                    var propertyvalue = Settings.Default[options.DataTypeName]?.ToString();
+
+                    if (!String.IsNullOrWhiteSpace(propertyvalue))
+                    {
+                        var serializer = new XmlSerializer(designeroptions.DesignerOptionsDataContextType);
+                        using (StringReader reader = new StringReader(propertyvalue))
+                        {
+                            var item = serializer.Deserialize(reader);
+
+                            if (item != null)
+                            {
+                                datacontext = item;
+                            }
+                        }
+                    }
+
+                    options.Data = datacontext;
+
+                    // add the options with group to the internal structure
+                    var groupname = t.Assembly.GetName().Name;
+
+                    var group = ActivityOptionGroups.FirstOrDefault(g => g.Name.Equals(groupname));
+
+                    if (group == null)
+                    {
+                        group = new ActivityOptionGroup(groupname);
+                        ActivityOptionGroups.Add(group);
+                    }
+
+                    group.Items.Add(options);                  
+
+                }
+
+                
             }
-                      
+              
+            
             Settings.Default.PropertyChanged += OnSettingsPropertyChanged;
 
             if (_notificationService != null)
@@ -94,17 +178,17 @@ namespace Designer.Models
             CurrentWorkflow = document;
         }
 
-        public Activity GetDocument()
+        Activity IDocumentProvider<Activity>.GetDocument()
         {
             return CurrentWorkflow;
         }
 
-        public bool GetDocumentChanged()
+        bool IDocumentProvider<Activity>.GetDocumentChanged()
         {
             return Changed;
         }
 
-        public void ActionPerformed()
+        void IDocumentProvider<Activity>.ActionPerformed()
         {
             Changed = false;
             IsBackstageOpen = false;
@@ -125,20 +209,31 @@ namespace Designer.Models
         { 
             // reset all the UI Output
             TraceMessages.Clear();
-
-            // to catch output messages we have to redirect the console outputstream
-            Console.SetOut(new TextToUiWriter(this) { Prefix = "Console: " });
             
+            Console.SetOut(new TextToUiWriter(this) { Prefix = "Console: " });
+
+            var designeroptions = new DesignerOptions();
+
+            foreach (var group in ActivityOptionGroups)
+            {
+                foreach (var o in group.Items)
+                {
+                    designeroptions.AddOption(o.Data.GetType(), o.Data);
+                }
+            }
+
             // execute the workflow
             var options = new WorkflowExecutionOptions()
             {
-                TraceWriter = this
+                TraceWriter = this,
+                DesignerOptions = designeroptions
             };
 
+            //-- Das wahrscheinlich eher nicht!
             options.TrackingParticipants.Add(new StateChangeTrackingParticipant(this, StateChangeRecords.All) {ExecutionTime = new RelativeExecutionTimeProvider()});
-            
-            var executable = CurrentWorkflow.Clone();
 
+            var executable = CurrentWorkflow.Clone();
+            
             await executionService.Execute(executable, options);
 
             _notificationService.Notify(new ExecutionFinishedNotification("Execution finished"));
@@ -158,10 +253,35 @@ namespace Designer.Models
 
         private void OnCloseCommand()
         {
+            // store all properties
+            foreach (var group in ActivityOptionGroups)
+           {
+               foreach (var option in group.Items)
+               {              
+                   if (option.Data != null)
+                   {
+                       SettingsPropertyValue value = Settings.Default.PropertyValues[option.DataTypeName];
+
+                       if (value == null)
+                       {
+                            SettingsProperty property = Settings.Default.Properties[option.DataTypeName];
+                            value = new SettingsPropertyValue(property);
+                       }
+
+                        var serializer = new XmlSerializer(option.Data.GetType());
+                        using (StringWriter writer = new StringWriter())
+                        {
+                            serializer.Serialize(writer, option.Data);
+                            value.PropertyValue = writer.ToString();
+                        }
+                   }
+                }
+            }
+            
             Application.Current.Shutdown();
         }
 
-        private void OnNotify(object sender, INotification notification)
+        private void OnNotify(object sender, INotification notification) 
         {
 
         }
@@ -178,7 +298,7 @@ namespace Designer.Models
         {
             if (!_dispatcher.CheckAccess())
             {
-                _dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() => { AddEntry(new LoggingEntry(message)); }));
+                _dispatcher.BeginInvoke(DispatcherPriority.Normal, (Action)(() => { AddEntry(new  LoggingEntry(message)); }));
             }
             else
             {
@@ -214,6 +334,8 @@ namespace Designer.Models
             get { return _loadedadapter; }
         }
 
+        public ObservableCollection<ActivityOptionGroup> ActivityOptionGroups { get; } = new ObservableCollection<ActivityOptionGroup>();
+         
         public ICommand ExecuteWorkflow { get; }
 
         public ICommand CloseCommand { get; }

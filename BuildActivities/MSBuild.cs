@@ -4,8 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Activities;
 using System.Activities.Expressions;
+using System.Activities.Presentation.PropertyEditing;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using BuildActivities.Designs;
+using Designer.Contracts;
+using Designer.Contracts.Attributes;
+
 
 namespace BuildActivities
 {
@@ -13,13 +19,12 @@ namespace BuildActivities
     /// <summary>
     /// https://msdn.microsoft.com/de-de/library/ms164311.aspx
     /// </summary>
+    [DesignerActivityOptions(typeof(BuildDesignerOptionsFactory), typeof(BuildDesignerOptions))]
     public sealed class MSBuild : NativeActivity<string>
-    {
+    {       
         [RequiredArgument]
-        public InArgument<string> ExecutablePath { get; set; }
-        
-        [RequiredArgument]
-        public InArgument<string> ProjectPath { get; set; } 
+        [Editor(typeof(SelectExecutableFileEditor), typeof(DialogPropertyValueEditor))]
+        public InArgument<string> ProjectFile { get; set; } 
         
         public InArgument<string> OutputDirectory { get; set; }  
 
@@ -27,12 +32,19 @@ namespace BuildActivities
         // und der Wert von der Ausführmethode zurückgegeben.
         protected override void Execute(NativeActivityContext context)
         {
-            
-            string executable = context.GetValue(this.ExecutablePath);
+            string executable;
 
-            string project = context.GetValue(this.ProjectPath);
+            string project = context.GetValue(this.ProjectFile);
             string outputdirectory = context.GetValue(this.OutputDirectory);
+             
+            var options = context.GetExtension<IDesignerOptionsExtension>();
 
+            var buildoptions = options.GetOptions<BuildDesignerOptions>();
+
+            if (buildoptions != null)
+            {
+                executable = buildoptions.Executable;
+            }
 
             // construct the command line
             var propertydict = new Dictionary<string, string>();
@@ -55,26 +67,26 @@ namespace BuildActivities
             
             try
             {
-                var startinfo = new ProcessStartInfo();
-                startinfo.FileName = executable;
-                startinfo.Arguments = commandline.ToString();
-                startinfo.UseShellExecute = false;
-                startinfo.RedirectStandardOutput = true;
-                startinfo.WindowStyle = ProcessWindowStyle.Hidden;
-                startinfo.CreateNoWindow = true;
+                //var startinfo = new ProcessStartInfo();
+                //startinfo.FileName = executable;
+                //startinfo.Arguments = commandline.ToString();
+                //startinfo.UseShellExecute = false;
+                //startinfo.RedirectStandardOutput = true;
+                //startinfo.WindowStyle = ProcessWindowStyle.Hidden;
+                //startinfo.CreateNoWindow = true;
 
-                var process = new Process {StartInfo = startinfo};
+                //var process = new Process {StartInfo = startinfo};
 
-                if (process.Start())
-                {
-                    process.WaitForExit();
+                //if (process.Start())
+                //{
+                //    process.WaitForExit();
 
-                    // issue: wrong encoding for german characters
-                    var result = process.StandardOutput.ReadToEnd();
+                //    // issue: wrong encoding for german characters
+                //    var result = process.StandardOutput.ReadToEnd();
                     
 
-                    Result.Set(context, result);
-                }
+                //    Result.Set(context, result);
+                //}
 
             }
             catch (Exception)
@@ -85,23 +97,22 @@ namespace BuildActivities
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="metadata"></param>
         protected override void CacheMetadata(NativeActivityMetadata metadata)
-        {
+        { 
             base.CacheMetadata(metadata);
 
-            var path = (ExecutablePath?.Expression as Literal<string>)?.Value;
-
-            if (!String.IsNullOrEmpty(path) && !File.Exists(path))
-            {
-                metadata.AddValidationError($"MSBuild executable file '{path}' is invalid or does not exist");
-            }
-
-            var project = (ProjectPath?.Expression as Literal<string>)?.Value;
+            var project = (ProjectFile?.Expression as Literal<string>)?.Value;
 
             if (!String.IsNullOrEmpty(project) && !File.Exists(project))
             {
-                metadata.AddValidationError($"MSBuild project or solution file '{project}' is invalid or does not exist");
+                // metadata.AddValidationError($"MSBuild project or solution file '{project}' is invalid or does not exist");
             }
+
+            metadata.RequireExtension(typeof(IDesignerOptionsExtension));
         }
     }
 }
