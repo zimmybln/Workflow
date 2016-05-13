@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.Win32;
 
 namespace BuildActivities.Designs
 {
@@ -23,6 +24,31 @@ namespace BuildActivities.Designs
         public BuildDesignerOptionsControl()
         {
             InitializeComponent();
+        }
+
+        private void OnSelectFileClick(object sender, RoutedEventArgs e)
+        {
+            var dlgSelectFile = new OpenFileDialog();
+
+            if (!String.IsNullOrEmpty(txtExecutable.Text))
+            {
+                dlgSelectFile.InitialDirectory = System.IO.Path.GetDirectoryName(txtExecutable.Text);
+                dlgSelectFile.FileName = System.IO.Path.GetFileName(txtExecutable.Text);
+            }
+
+            dlgSelectFile.Multiselect = false;
+            dlgSelectFile.ShowReadOnly = false;
+            dlgSelectFile.CheckFileExists = true;
+            dlgSelectFile.Filter = "Microsoft Build|msbuild.exe";
+            dlgSelectFile.Title = "Select MS Build";
+
+            if (dlgSelectFile.ShowDialog() == true)
+            {
+                txtExecutable.Text = dlgSelectFile.FileName;
+
+                // update binding manually
+                BindingOperations.GetBindingExpression(txtExecutable, TextBox.TextProperty)?.UpdateSource();
+            }
         }
     }
 }

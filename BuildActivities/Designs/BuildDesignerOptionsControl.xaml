@@ -7,6 +7,16 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-          <TextBox Height="22" Margin="5,5,5,0" VerticalAlignment="Top" Text="{Binding Executable}" />  
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="32" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        
+        <TextBox Grid.Column="0" Grid.Row="0" Height="22" Margin="5,5,5,0" VerticalAlignment="Top" Text="{Binding Executable}" x:Name="txtExecutable"/>  
+        <Button Grid.Column="1" Grid.Row="0" Content="..." Margin="6" Click="OnSelectFileClick"></Button>
     </Grid>
 </UserControl>

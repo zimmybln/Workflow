@@ -23,9 +23,11 @@ namespace BuildActivities
     public sealed class MSBuild : NativeActivity<string>
     {       
         [RequiredArgument]
-        [Editor(typeof(SelectExecutableFileEditor), typeof(DialogPropertyValueEditor))]
+        [Editor(typeof(SelectSolutionFileEditor), typeof(DialogPropertyValueEditor))]
         public InArgument<string> ProjectFile { get; set; } 
         
+       
+        [Editor(typeof(SelectDirectoryEditor), typeof(DialogPropertyValueEditor))]
         public InArgument<string> OutputDirectory { get; set; }  
 
         // Wenn durch die Aktivität ein Wert zurückgegeben wird, erfolgt eine Ableitung von CodeActivity<TResult>
@@ -109,7 +111,7 @@ namespace BuildActivities
 
             if (!String.IsNullOrEmpty(project) && !File.Exists(project))
             {
-                // metadata.AddValidationError($"MSBuild project or solution file '{project}' is invalid or does not exist");
+                metadata.AddValidationError($"MSBuild project or solution file '{project}' is invalid or does not exist");
             }
 
             metadata.RequireExtension(typeof(IDesignerOptionsExtension));

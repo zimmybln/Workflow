@@ -39,12 +39,11 @@ namespace Designer.Models
         private bool _isBackstageOpen;
         private bool _changed = false;
         private readonly Dispatcher _dispatcher;
-        private readonly LoadedAdapter _loadedadapter;
 
         private readonly NotificationService _notificationService;
 
         [Import(AllowRecomposition = true)]
-        private IWorkflowExecutionService executionService = null;
+        private IWorkflowExecutionService _executionService = null;
 
         [ImportingConstructor]
         public MainWindowModel(NotificationService notificationService)
@@ -63,7 +62,7 @@ namespace Designer.Models
             FileModel = new ActivityFileModel(new FileBasedStorageUi() {DefaultExtension = "wdef"},
                                                    this);
             
-            _loadedadapter = new LoadedAdapter(OnLoaded);
+            LoadedAdapter = new LoadedAdapter(OnLoaded);
 
             ToolboxItems.AddRange("Default", typeof(If), typeof(Sequence), typeof(While), typeof(DoWhile), typeof(Assign), typeof(Switch<>), typeof(WriteLine),
                                             typeof(TerminateWorkflow), typeof(Delay), typeof(InvokeMethod));
@@ -88,14 +87,20 @@ namespace Designer.Models
                     options.DataTypeName = designeroptions.DesignerOptionsDataContextType.Name;
 
                     // ui factory
-                    var uifactory = Activator.CreateInstance(designeroptions.DesignerOptionsUiFactoryType) as IDesignerOptionsUiFactory;
-
-                    if (uifactory != null)
+                    IDesignerOptionsUiFactory uifactory = null;
+                    try
                     {
-                        options.Content = uifactory.GetOptionsUi();
+                        uifactory = Activator.CreateInstance(designeroptions.DesignerOptionsUiFactoryType) as IDesignerOptionsUiFactory;
                     }
+                    catch (Exception)
+                    {
+                        // ignore exception here
+                        // collect the exception here...
+                    }
+                    
+                    options.Content = uifactory?.GetOptionsUi();
 
-                    //
+                    // prepare the storage of custom properties
                     SettingsProperty property = Settings.Default.Properties[options.DataTypeName];
 
                     object datacontext = null;
@@ -105,7 +110,6 @@ namespace Designer.Models
                         datacontext = Activator.CreateInstance(designeroptions.DesignerOptionsDataContextType);
 
                         property = new SettingsProperty(options.DataTypeName);
-                        property.Name = options.DataTypeName;
                         property.PropertyType = typeof(string);
                         property.IsReadOnly = false;
                         property.Attributes.Add(typeof(UserScopedSettingAttribute), new UserScopedSettingAttribute());
@@ -121,18 +125,27 @@ namespace Designer.Models
 
                     var propertyvalue = Settings.Default[options.DataTypeName]?.ToString();
 
+                    // deserialize the property value
                     if (!String.IsNullOrWhiteSpace(propertyvalue))
                     {
-                        var serializer = new XmlSerializer(designeroptions.DesignerOptionsDataContextType);
-                        using (StringReader reader = new StringReader(propertyvalue))
+                        try
                         {
-                            var item = serializer.Deserialize(reader);
-
-                            if (item != null)
+                            var serializer = new XmlSerializer(designeroptions.DesignerOptionsDataContextType);
+                            using (StringReader reader = new StringReader(propertyvalue))
                             {
-                                datacontext = item;
+                                var item = serializer.Deserialize(reader);
+
+                                if (item != null)
+                                {
+                                    datacontext = item;
+                                }
                             }
                         }
+                        catch (Exception)
+                        {
+                            // collect the exception
+                        }
+
                     }
 
                     options.Data = datacontext;
@@ -234,7 +247,7 @@ namespace Designer.Models
 
             var executable = CurrentWorkflow.Clone();
             
-            await executionService.Execute(executable, options);
+            await _executionService.Execute(executable, options);
 
             _notificationService.Notify(new ExecutionFinishedNotification("Execution finished"));
             
@@ -329,10 +342,7 @@ namespace Designer.Models
         
         #region Properties
 
-        public LoadedAdapter LoadedAdapter
-        {
-            get { return _loadedadapter; }
-        }
+        public LoadedAdapter LoadedAdapter { get; }
 
         public ObservableCollection<ActivityOptionGroup> ActivityOptionGroups { get; } = new ObservableCollection<ActivityOptionGroup>();
          

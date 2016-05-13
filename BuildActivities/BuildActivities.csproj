@@ -59,8 +59,10 @@
     </Compile>
     <Compile Include="Designs\BuildDesignerOptionsFactory.cs" />
     <Compile Include="Designs\Dialogs.cs" />
+    <Compile Include="Designs\SelectDirectoryEditor.cs" />
     <Compile Include="Designs\SelectExecutableFileEditor.cs" />
     <Compile Include="Designs\SelectFileEditor.cs" />
+    <Compile Include="Designs\SelectSolutionFileEditor.cs" />
     <Compile Include="MSBuild.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -10,6 +10,16 @@ namespace Designer.Contracts.Attributes
     {
         public DesignerActivityOptionsAttribute(Type designerOptionsUiFactory, Type designerOptionsDataContextType)
         {
+            if (designerOptionsUiFactory == null)
+            {
+                throw new ArgumentNullException(nameof(designerOptionsUiFactory));
+            }
+
+            if (designerOptionsDataContextType == null)
+            {
+                throw new ArgumentNullException(nameof(designerOptionsDataContextType));
+            }
+
             DesignerOptionsUiFactoryType = designerOptionsUiFactory;
             DesignerOptionsDataContextType = designerOptionsDataContextType;
         }
