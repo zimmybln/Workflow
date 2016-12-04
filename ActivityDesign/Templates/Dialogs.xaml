@@ -1,8 +1,8 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:propertyEditing="clr-namespace:System.Activities.Presentation.PropertyEditing;assembly=System.Activities.Presentation"
-    xmlns:designs="clr-namespace:BuildActivities.Designs"
-    x:Class="BuildActivities.Designs.Dialogs">
+    xmlns:designs="clr-namespace:ActivityDesign.Templates"
+    x:Class="ActivityDesign.Templates.Dialogs">
 
     <DataTemplate x:Key="SelectFileEditorTemplate">
         <Grid>
@@ -15,10 +15,4 @@
         </Grid>
     </DataTemplate>
     
-    <DataTemplate x:Key="BuildOptionsTemplate" DataType="designs:BuildDesignerOptions">
-        <Grid>
-            <designs:BuildDesignerOptionsControl Margin="0"/>
-        </Grid>
-    </DataTemplate>
-
 </ResourceDictionary>

@@ -10,7 +10,7 @@ namespace BuildActivities.Designs
 {
     public class BuildDesignerOptionsFactory : IDesignerOptionsUiFactory
     {
-        private Dialogs res = new Dialogs();
+        private DialogResources res = new DialogResources();
 
         public object GetOptionsUi()
         {

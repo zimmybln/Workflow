@@ -14,7 +14,7 @@ namespace BuildActivities.Designs
     public abstract class SelectFileEditor : DialogPropertyValueEditor
     {
 
-        private Dialogs res = new Dialogs();
+        private DialogResources res = new DialogResources();
 
         protected SelectFileEditor(string ressourceKey)
         {

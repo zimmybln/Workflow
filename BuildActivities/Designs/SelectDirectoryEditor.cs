@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Activities;
+using System.Activities.Expressions;
 using System.Activities.Presentation.PropertyEditing;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,18 +11,34 @@ using System.Windows.Forms;
 
 namespace BuildActivities.Designs
 {
+    /// <summary>
+    /// Dieser Editor erlaubt die Auswahl eines Verzeichnisses für den
+    /// Wert einer Eigenschaft.
+    /// </summary>
     public class SelectDirectoryEditor : DialogPropertyValueEditor
     {
-        private Dialogs res = new Dialogs();
+        private readonly DialogResources _resources = new DialogResources();
 
         public SelectDirectoryEditor()
         {
-            this.InlineEditorTemplate = res["SelectFileEditorTemplate"] as DataTemplate;
+            this.InlineEditorTemplate = _resources["SelectFileEditorTemplate"] as DataTemplate;
         }
 
         public override void ShowDialog(PropertyValue propertyValue, IInputElement commandSource)
         {
             var dlg = new FolderBrowserDialog();
+
+            var value = propertyValue.Value as InArgument<String>;
+
+            dlg.Description =
+                $"Bitte legen Sie den Wert der Eigenschaft {propertyValue.ParentProperty.DisplayName} fest.";
+
+            if (value != null)
+            {
+                var literal = value.Expression as Literal<String>;
+                dlg.SelectedPath = literal?.Value;
+            }
+
 
             if (dlg.ShowDialog() == DialogResult.OK)
             {

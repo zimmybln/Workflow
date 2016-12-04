@@ -35,7 +35,9 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Activities" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -44,11 +46,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\TestDesignerOptionsExtensions.cs" />
     <Compile Include="MsBuildTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Data\Source\DemoClassLibrary1.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ActivityTests\ActivityTests.csproj">
+      <Project>{3fb7c25c-03d3-436c-b61b-5da2d5f873a0}</Project>
+      <Name>ActivityTests</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BuildActivities\BuildActivities.csproj">
+      <Project>{3997ddb7-e6bd-4946-80b4-eadc9085c97c}</Project>
+      <Name>BuildActivities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Designer.Contracts\Designer.Contracts.csproj">
+      <Project>{09177cf6-228b-4ac8-87e3-b61d7fb6eab6}</Project>
+      <Name>Designer.Contracts</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -58,7 +58,11 @@
       <DependentUpon>BuildDesignerOptionsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Designs\BuildDesignerOptionsFactory.cs" />
-    <Compile Include="Designs\Dialogs.cs" />
+    <Compile Include="Designs\BuildModeDesigner.cs" />
+    <Compile Include="Designs\DialogResources.cs" />
+    <Compile Include="Designs\MSBuildDesigner.xaml.cs">
+      <DependentUpon>MSBuildDesigner.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Designs\SelectDirectoryEditor.cs" />
     <Compile Include="Designs\SelectExecutableFileEditor.cs" />
     <Compile Include="Designs\SelectFileEditor.cs" />
@@ -78,9 +82,13 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Designs\Dialogs.xaml">
+    <Page Include="Designs\DialogResources.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Designs\MSBuildDesigner.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

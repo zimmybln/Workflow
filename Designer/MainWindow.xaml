@@ -108,10 +108,20 @@
             
             <fluent:RibbonTabItem Header="Start">
                 
-                <fluent:RibbonGroupBox Header="Execution" Width="100" HorizontalContentAlignment="Center">
-                    <fluent:Button Header="Run" Command="{Binding ExecuteWorkflow}" LargeIcon="Resources\32x32\Run.png">
-                        
-                    </fluent:Button>
+                <fluent:RibbonGroupBox Header="Execution" Width="Auto" HorizontalContentAlignment="Center">
+                    <fluent:Button Header="Run" Command="{Binding ExecuteWorkflow}" LargeIcon="Resources\32x32\Run.png" />
+                    <fluent:Button Header="Run with Parameters" LargeIcon="Resources\32x32\Run (blau).png" />
+                    <!--<fluent:RibbonToolBarLayoutDefinition Size="Small">
+                        <fluent:RibbonToolBarRow>
+                            
+                        </fluent:RibbonToolBarRow>
+                    </fluent:RibbonToolBarLayoutDefinition>-->
+                </fluent:RibbonGroupBox>
+            </fluent:RibbonTabItem>
+            
+            <fluent:RibbonTabItem Header="Documentation">
+                <fluent:RibbonGroupBox Width="500">
+                    
                 </fluent:RibbonGroupBox>
             </fluent:RibbonTabItem>
         </fluent:Ribbon>
@@ -215,4 +225,6 @@
 
     </Grid>
 </fluent:RibbonWindow>
+
+
 

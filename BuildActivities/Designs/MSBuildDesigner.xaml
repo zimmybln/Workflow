@@ -1,0 +1,16 @@
+﻿<sap:ActivityDesigner x:Class="BuildActivities.Designs.MSBuildDesigner"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sap="clr-namespace:System.Activities.Presentation;assembly=System.Activities.Presentation"
+                      MaxWidth="400">
+    <Grid>
+        <AccessText TextWrapping="Wrap" x:Name="AccessText">
+            <AccessText.Text>
+                <MultiBinding StringFormat="{}Das Projekt {0} wird im das Verzeichnis {1} erstellt.">
+                    <Binding Path="ProjectFileInfo" />
+                    <Binding Path="OutputDirectoryInfo" />
+                </MultiBinding> 
+            </AccessText.Text>
+        </AccessText>
+    </Grid>
+</sap:ActivityDesigner>

@@ -20,6 +20,7 @@ namespace BuildActivities
     /// https://msdn.microsoft.com/de-de/library/ms164311.aspx
     /// </summary>
     [DesignerActivityOptions(typeof(BuildDesignerOptionsFactory), typeof(BuildDesignerOptions))]
+    [Designer(typeof(MSBuildDesigner))]
     public sealed class MSBuild : NativeActivity<string>
     {       
         [RequiredArgument]
@@ -34,7 +35,7 @@ namespace BuildActivities
         // und der Wert von der Ausführmethode zurückgegeben.
         protected override void Execute(NativeActivityContext context)
         {
-            string executable;
+            string executable = String.Empty;
 
             string project = context.GetValue(this.ProjectFile);
             string outputdirectory = context.GetValue(this.OutputDirectory);
@@ -69,26 +70,25 @@ namespace BuildActivities
             
             try
             {
-                //var startinfo = new ProcessStartInfo();
-                //startinfo.FileName = executable;
-                //startinfo.Arguments = commandline.ToString();
-                //startinfo.UseShellExecute = false;
-                //startinfo.RedirectStandardOutput = true;
-                //startinfo.WindowStyle = ProcessWindowStyle.Hidden;
-                //startinfo.CreateNoWindow = true;
+                var startinfo = new ProcessStartInfo();
+                startinfo.FileName = executable;
+                startinfo.Arguments = commandline.ToString();
+                startinfo.UseShellExecute = false;
+                startinfo.RedirectStandardOutput = true;
+                startinfo.WindowStyle = ProcessWindowStyle.Hidden;
+                startinfo.CreateNoWindow = true;
 
-                //var process = new Process {StartInfo = startinfo};
+                var process = new Process { StartInfo = startinfo };
 
-                //if (process.Start())
-                //{
-                //    process.WaitForExit();
+                if (process.Start())
+                {
+                    process.WaitForExit(2000);
 
-                //    // issue: wrong encoding for german characters
-                //    var result = process.StandardOutput.ReadToEnd();
+                    // issue: invalid encoding for german characters
+                    var result = process.StandardOutput.ReadToEnd();
                     
-
-                //    Result.Set(context, result);
-                //}
+                    Result.Set(context, result);
+                }
 
             }
             catch (Exception)
@@ -115,6 +115,12 @@ namespace BuildActivities
             }
 
             metadata.RequireExtension(typeof(IDesignerOptionsExtension));
+
+            metadata.AddArgument(new RuntimeArgument("Test", typeof(String), ArgumentDirection.In));
+
+            // Debug.WriteLine(metadata.Environment.Parent.GetType().Name);
+
+
         }
     }
 }

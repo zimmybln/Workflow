@@ -10,32 +10,43 @@ using Designer.Contracts;
 namespace FileActivities
 {
     [ToolboxBitmap(typeof(FileCopy), "FileCopy.png")]
-    public sealed class FileCopy : NativeActivity
+    public sealed class FileCopy : NativeActivity<List<string>>
     {
-        // Aktivitätseingabeargument vom Typ "string" definieren
         public InArgument<List<string>> SourceFiles { get; set; }
 
         public InArgument<string> TargetDirectory { get; set; } 
 
-        // Wenn durch die Aktivität ein Wert zurückgegeben wird, erfolgt eine Ableitung von CodeActivity<TResult>
-        // und der Wert von der Ausführmethode zurückgegeben.
         protected override void Execute(NativeActivityContext context)
         {
-            // Laufzeitwert des Texteingabearguments abrufen
             string target = context.GetValue<string>(TargetDirectory);
             List<string> sourcefiles = context.GetValue<List<string>>(SourceFiles);
+            List<string> targetfiles = new List<string>();
 
-            if (sourcefiles != null && sourcefiles.Any())
+            // check if is anything to do
+            if (sourcefiles == null || !sourcefiles.Any())
             {
-                foreach (var file in sourcefiles)
-                {
-                    var filename = Path.GetFileName(file);
-                    var targetfilename = Path.Combine(target, filename);
-
-
-                    File.Copy(file, targetfilename);
-                }
+                Result.Set(context, targetfiles);
+                return;
             }
+
+            // check existence before copy files
+            foreach (var file in sourcefiles)
+            {
+                if (!File.Exists(file))
+                    throw new FileNotFoundException("file not exists", file);
+            }
+            
+            foreach (var file in sourcefiles)
+            {
+                var filename = Path.GetFileName(file);
+                var targetfilename = Path.Combine(target, filename);
+
+                File.Copy(file, targetfilename);
+
+                targetfiles.Add(targetfilename);
+            }
+
+            Result.Set(context, targetfiles);
             
         }
     }

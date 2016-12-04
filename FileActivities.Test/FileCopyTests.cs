@@ -1,72 +1,137 @@
 ﻿using System;
 using System.Activities;
+using System.Activities.Statements;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ActivityTests;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 
 namespace FileActivities.Test
 {
     [TestFixture()]
-    public class FileCopyTests 
+    public class FileCopyTests : ActivityTestBase
     {
-        [Test]
-        public void CopyFile()
+
+        [TestCase("SomeFile1.txt")]
+        public void CopySingleFileAsArgument(string fileName)
         {
             var target = FromRootDirectory("Data\\Target");
-            var source = FromRootDirectory("Data\\Source\\SomeFile1.txt");
+            var source = FromRootDirectory($"Data\\Source\\{fileName}");
 
             var filecopy = new FileCopy()
             {
                 SourceFiles = new InArgument<List<string>>(context => new List<string>(new[] { source })),
+                TargetDirectory = target
+            };
+
+            var app = new WorkflowTestApplication(filecopy);
+
+            var result = app.Run();
+
+            var expectedfilename = FromRootDirectory($"Data\\Target\\{fileName}");
+
+            Assert.IsTrue((result["Result"] as List<string>)?.Contains(expectedfilename), "The expected file is not a part of the result");
+
+            Assert.IsTrue(File.Exists(expectedfilename), "The expected file does not exists");
+        }
+
+        [TestCase("SomeFile2.txt")]
+        public void CopySingleFileAsVariable(string fileName)
+        {
+            var target = FromRootDirectory("Data\\Target");
+            var source = FromRootDirectory($"Data\\Source\\{fileName}");
+
+            var sourcevariable = new Variable<List<string>>()
+            {
+                Name = "Source"
+            };
+
+            var sequence = new Sequence()
+            {
+                Variables = { sourcevariable },
+                Activities =
+                {
+                    new Assign<List<string>>()
+                    {
+                        To = OutArgument<List<string>>.FromVariable(sourcevariable),
+                        Value = new InArgument<List<string>>(context => new List<string>(new[] {source}))
+                    },
+                    new FileCopy()
+                    {
+                        SourceFiles = new InArgument<List<string>>(sourcevariable),
+                        TargetDirectory = new InArgument<string>(target)
+                    }
+                }
+            };
+
+            var app = new WorkflowTestApplication(sequence);
+
+            app.Run();
+
+            var expectedfilename = FromRootDirectory($"Data\\Target\\{fileName}");
+
+            Assert.IsTrue(File.Exists(expectedfilename), "The expected file does not exists");
+
+        }
+
+        [TestCase("SomeFile3.txt")]
+        public void CopySingleFileAsInput(string fileName)
+        {
+            var target = FromRootDirectory("Data\\Target");
+            var source = FromRootDirectory($"Data\\Source\\{fileName}");
+
+            var filecopy = new FileCopy()
+            {
                 TargetDirectory = new InArgument<string>(target)
             };
-            
-            WorkflowInvoker.Invoke(filecopy);
 
-            Assert.IsTrue(File.Exists(FromRootDirectory("Data\\Target\\SomeFile1.txt")), "The expected file does not exists");
+            var app = new WorkflowTestApplication(filecopy);
 
+            app.Inputs.Add("SourceFiles", new List<string>(new[] {source}));
+
+            app.Run();
+
+            Assert.IsTrue(File.Exists(FromRootDirectory($"Data\\Target\\{fileName}")), "The expected file does not exists");
         }
 
         [Test]
-        public void CopyFiles()
+        public void CopyFilesNotExists()
         {
-            
+            var target = FromRootDirectory("Data\\Target");
+            var source = FromRootDirectory("Data\\Source\\SomeFileNotExists.txt");
+
+            var filecopy = new FileCopy()
+            {
+                TargetDirectory = new InArgument<string>(target)
+            };
+
+            var app = new WorkflowTestApplication(filecopy);
+
+            app.Inputs.Add("SourceFiles", new List<string>(new[] { source }));
+
+            var result = app.Run();
+
+            Assert.IsTrue(result.Exception != null && result.Exception.GetType() == typeof(FileNotFoundException), "exception FileNotFoundException wasn't thrown");
         }
-
-        [Test]
-        public void CopyFileInUse()
-        {
-            
-        }
-
-        public string FromRootDirectory(string directory)
-        {
-            var path = Path.GetDirectoryName(new Uri(this.GetType().Assembly.CodeBase).LocalPath);
-
-            return Path.Combine(path, directory);
-        }
-
 
         [OneTimeSetUp]
         public void OnTestInitialize()
         {
-            // create target directory or delete all target files
+            // create source directory and ensure the existence of files
+            var source = FromRootDirectory("Data\\Source");
             var target = FromRootDirectory("Data\\Target");
 
-            if (Directory.Exists(target))
-            {
-                Directory.GetFiles(target, "*.*").ToList().ForEach(File.Delete);
-            }
-            else
-            {
-                Directory.CreateDirectory(target);
-            }
+            EnsureDirectory(source, false);
 
+            CreateTextFiles(source, 10, i => $"SomeFile{i + 1}.txt");
+            
+            EnsureDirectory(target, true);
         }
 
     }

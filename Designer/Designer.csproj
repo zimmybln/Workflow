@@ -207,7 +207,9 @@
   <ItemGroup>
     <Resource Include="Resources\32x32\Run.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\32x32\Run %28blau%29.png" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Designer.Contracts\Designer.Contracts.csproj">
       <Project>{09177cf6-228b-4ac8-87e3-b61d7fb6eab6}</Project>

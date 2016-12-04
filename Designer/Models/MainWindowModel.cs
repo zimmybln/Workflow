@@ -44,7 +44,7 @@ namespace Designer.Models
 
         [Import(AllowRecomposition = true)]
         private IWorkflowExecutionService _executionService = null;
-
+         
         [ImportingConstructor]
         public MainWindowModel(NotificationService notificationService)
         {
@@ -65,7 +65,7 @@ namespace Designer.Models
             LoadedAdapter = new LoadedAdapter(OnLoaded);
 
             ToolboxItems.AddRange("Default", typeof(If), typeof(Sequence), typeof(While), typeof(DoWhile), typeof(Assign), typeof(Switch<>), typeof(WriteLine),
-                                            typeof(TerminateWorkflow), typeof(Delay), typeof(InvokeMethod));
+                                            typeof(TerminateWorkflow), typeof(Delay), typeof(InvokeMethod), typeof(ForEach<>));
             ToolboxItems.AddRange("ErrorHandling", typeof(Throw), typeof(TryCatch), typeof(Rethrow));
 
             if (Settings.Default.LoadActivities)

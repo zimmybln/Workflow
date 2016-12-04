@@ -7,9 +7,9 @@ using System.Windows;
 
 namespace BuildActivities.Designs
 {
-    public partial class Dialogs : ResourceDictionary
+    public partial class DialogResources : ResourceDictionary
     {
-        public Dialogs() : base()
+        public DialogResources() : base()
         {
             InitializeComponent();
         }
